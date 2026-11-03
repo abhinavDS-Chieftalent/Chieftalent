@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How ChiefTalent works</title>
+<meta name="description" content="The ChiefTalent workflow, from a job description to a hiring decision.">
+<style>
+  @font-face {
+    font-family: "Archivo";
+    src: url("../frontend/public/fonts/Archivo-variable.woff2") format("woff2");
+    font-weight: 100 900;
+    font-display: swap;
+  }
+  :root {
+    --ink: #13110F;
+    --orange: #EE5A2E;
+    --orange-deep: #C4421B;
+    --orange-tint: #FDE7DF;
+    --fog: #F2F3F5;
+    --line: #DDE0E5;
+    --muted: #5B6270;
+    --bg: #FFFFFF;
+    --card: #FFFFFF;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: "Archivo", system-ui, sans-serif; color: var(--ink); background: var(--bg); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  a { color: var(--orange-deep); }
+  :focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; border-radius: 4px; }
+  .skip { position: absolute; left: 16px; top: -60px; background: var(--ink); color: #fff; padding: 10px 14px; border-radius: 8px; z-index: 10; }
+  .skip:focus { top: 16px; }
+
+  header.top { background: var(--ink); }
+  header.top .in { max-width: 1240px; margin: 0 auto; padding: 18px 24px; }
+  header.top img { height: 44px; width: auto; display: block; }
+
+  main { max-width: 1240px; margin: 0 auto; padding: 0 24px 80px; }
+  .intro { padding: 72px 0 48px; max-width: 820px; }
+  h1 { font-size: clamp(40px, 6vw, 76px); line-height: 1; letter-spacing: -0.035em; font-weight: 800; text-wrap: balance; }
+  .intro p { margin-top: 22px; font-size: clamp(18px, 2vw, 22px); color: var(--muted); max-width: 640px; text-wrap: pretty; }
+
+  /* lane header */
+  .lanes { display: grid; grid-template-columns: 250px repeat(3, minmax(0, 1fr)); gap: 0 20px; padding: 0 0 14px; border-bottom: 2px solid var(--ink); }
+  .lanes div { font-size: 17px; font-weight: 700; }
+  .lanes small { display: block; font-size: 15px; font-weight: 500; color: var(--muted); margin-top: 2px; }
+
+  /* stages */
+  ol.flow { list-style: none; position: relative; }
+  .stage { display: grid; grid-template-columns: 250px repeat(3, minmax(0, 1fr)); gap: 0 20px; padding: 36px 0; border-bottom: 1px solid var(--line); position: relative; }
+  .stage:last-child { border-bottom: 0; }
+  .mark { display: flex; gap: 16px; align-items: flex-start; }
+  .mark .n { flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--ink); color: #fff; font-weight: 700; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+  .mark h2 { font-size: 26px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 800; padding-top: 4px; }
+  .cell { font-size: 17px; color: #2A2723; }
+  .cell p + p { margin-top: 10px; }
+  .cell strong { font-weight: 700; color: var(--ink); }
+  .cell.ct { background: var(--orange-tint); border-radius: 10px; padding: 16px 18px; }
+  .cell.empty { color: var(--muted); }
+  .cell::before { content: attr(data-lane); display: none; font-size: 15px; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+  .tag { display: inline-block; font-size: 15px; font-weight: 700; padding: 2px 9px; border-radius: 6px; background: #fff; color: var(--orange-deep); border: 1px solid #F3B9A4; margin: 2px 4px 2px 0; }
+
+  /* decision strip */
+  .decide { margin-top: 56px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px 56px; padding-top: 40px; border-top: 2px solid var(--ink); }
+  .decide h3 { font-size: 24px; letter-spacing: -0.02em; font-weight: 800; margin-bottom: 14px; }
+  .decide ul { list-style: none; }
+  .decide li { padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 17px; }
+  .decide li:last-child { border-bottom: 0; }
+  .decide dl { font-size: 17px; }
+  .decide dt { font-weight: 700; margin-top: 12px; }
+  .decide dd { color: var(--muted); }
+
+  footer { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 16px; }
+
+  @media (max-width: 980px) {
+    .lanes { display: none; }
+    .stage { grid-template-columns: 1fr; gap: 14px; padding: 30px 0; }
+    .cell::before { display: block; }
+    .cell.empty { display: none; }
+    .cell.ct { padding: 16px; }
+    .decide { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    main { padding: 0 16px 64px; }
+    header.top .in { padding: 14px 16px; }
+    .intro { padding: 48px 0 32px; }
+    .mark h2 { font-size: 23px; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#flow">Skip to the workflow</a>
+<header class="top"><div class="in"><img src="../frontend/public/brand/chieftalent-logo-white.png" alt="ChiefTalent" width="88" height="44"></div></header>
+
+<main>
+  <section class="intro" aria-labelledby="title">
+    <h1 id="title">How ChiefTalent works</h1>
+    <p>From a job description to a hiring decision in six stages. The AI runs the first round and recommends. People make every decision.</p>
+  </section>
+
+  <div class="lanes" aria-hidden="true">
+    <div></div>
+    <div>You<small>Recruiter or admin</small></div>
+    <div>ChiefTalent<small>The platform and the AI</small></div>
+    <div>Candidate<small>In their own browser</small></div>
+  </div>
+
+  <ol class="flow" id="flow">
+
+    <li class="stage">
+      <div class="mark"><span class="n">1</span><h2>Add the job</h2></div>
+      <div class="cell" data-lane="You">
+        <p>Paste the job description or upload a PDF.</p>
+        <p>Set the shortlist line. The default is 70 out of 100.</p>
+      </div>
+      <div class="cell ct" data-lane="ChiefTalent">
+        <p>Turns the job description into a clean structure and keeps a copy you can download.</p>
+      </div>
+      <div class="cell empty" data-lane="Candidate">Not involved yet.</div>
+    </li>
+
+    <li class="stage">
+      <div class="mark"><span class="n">2</span><h2>CVs come in</h2></div>
+      <div class="cell" data-lane="You">
+        <p>Upload as many PDFs as you have.</p>
+      </div>
+      <div class="cell ct" data-lane="ChiefTalent">
+        <p>Scores every CV against the job and says why.</p>
+        <p>Catches exact duplicates and holds their interview link until you have looked.</p>
+      </div>
+      <div class="cell empty" data-lane="Candidate">Not involved yet.</div>
+    </li>
+
+    <li class="stage">
+      <div class="mark"><span class="n">3</span><h2>Good fits get a link</h2></div>
+      <div class="cell" data-lane="You">
+        <p>Send a link to anyone the AI turned down, whenever you want a second look.</p>
+      </div>
+      <div class="cell ct" data-lane="ChiefTalent">
+        <p><strong>Above your line:</strong> a personal interview link is emailed.</p>
+        <p><strong>Below it:</strong> nothing is sent.</p>
+      </div>
+      <div class="cell" data-lane="Candidate">
+        <p>Receives a link that belongs to them alone.</p>
+      </div>
+    </li>
+
+    <li class="stage">
+      <div class="mark"><span class="n">4</span><h2>The interview</h2></div>
+      <div class="cell empty" data-lane="You">Nothing to do. Results fill in as it happens.</div>
+      <div class="cell ct" data-lane="ChiefTalent">
+        <p>Writes the 20 questions from the job and the candidate's own CV.</p>
+        <p>Watches the session with integrity checks:</p>
+        <p><span class="tag">Second person</span><span class="tag">Phone in frame</span><span class="tag">Where they look</span><span class="tag">Head position</span><span class="tag">Background voices</span><span class="tag">Photo or screen spoofing</span></p>
+        <p>Warns on leaving full screen or switching tabs. A third warning ends the interview.</p>
+      </div>
+      <div class="cell" data-lane="Candidate">
+        <p>Confirms their email with a 6-digit code, shares a few details that are not scored, and checks camera and microphone.</p>
+        <p>Then 30 minutes: one video answer and 20 multiple-choice questions.</p>
+        <p>Finishes with a situation-based video question, answerable in about five minutes: working with others, technical thinking, problem solving, decisions and communication.</p>
+      </div>
+    </li>
+
+    <li class="stage">
+      <div class="mark"><span class="n">5</span><h2>The AI evaluates</h2></div>
+      <div class="cell empty" data-lane="You">Waiting for the evidence page.</div>
+      <div class="cell ct" data-lane="ChiefTalent">
+        <p>Marks the multiple-choice answers.</p>
+        <p>Turns speech into text on the platform, so accuracy never depends on the candidate's browser.</p>
+        <p>Scores the spoken answers from the transcript and reviews how each one was delivered, with video and voice analysis.</p>
+        <p>Recommends progress, review or reject, and gives its reasons.</p>
+      </div>
+      <div class="cell empty" data-lane="Candidate">Finished.</div>
+    </li>
+
+    <li class="stage">
+      <div class="mark"><span class="n">6</span><h2>You decide</h2></div>
+      <div class="cell" data-lane="You">
+        <p>Open one page with the recordings, transcripts, answers and AI notes.</p>
+        <p>Select, reject or ask for another look. Overrule any recommendation, or issue a fresh interview.</p>
+      </div>
+      <div class="cell ct" data-lane="ChiefTalent">
+        <p>Keeps every score next to its reasons, so each recommendation can be checked.</p>
+      </div>
+      <div class="cell empty" data-lane="Candidate">Finished.</div>
+    </li>
+  </ol>
+
+  <section class="decide" aria-label="Decisions and data">
+    <div>
+      <h3>Where a person decides</h3>
+      <ul>
+        <li>Which job, and where the shortlist line sits.</li>
+        <li>Whether a candidate the AI turned down still gets a link.</li>
+        <li>Whether to progress, reject or look again after the evidence.</li>
+        <li>Whether to issue a fresh interview.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Data and access</h3>
+      <dl>
+        <dt>What is stored</dt>
+        <dd>CVs, interview answers, recordings, transcripts and AI evaluations.</dd>
+        <dt>What goes to the AI API</dt>
+        <dd>CV text and the transcripts of spoken answers, to score them and to write interview questions.</dd>
+        <dt>Deleting a candidate</dt>
+        <dd>Removes their CV, answers, recordings and evaluation.</dd>
+        <dt>Access</dt>
+        <dd>Staff sign in as an admin or a recruiter. Each interview link is unique to one candidate and needs an emailed code.</dd>
+      </dl>
+    </div>
+  </section>
+
+  <footer>
+    Sales questions: <a href="mailto:sales@dotstark.com">sales@dotstark.com</a>. Interview problems and candidate data requests: <a href="mailto:yash@dotstark.com">yash@dotstark.com</a>.
+  </footer>
+</main>
+</body>
+</html>

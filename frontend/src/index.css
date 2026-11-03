@@ -1,0 +1,294 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ChiefTalent design system.
+   One family (Archivo, variable weight + width), one accent (DotStark orange), ink and white.
+   Radius rule: controls 6px, panels 8px, hero data panel 10px. Structure comes from spacing
+   and 1px lines, not stacked drop-shadow cards. No monospace, no uppercase labels. */
+
+@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url("/fonts/Archivo-variable.woff2") format("woff2");
+}
+
+:root {
+  /* Brand tokens */
+  --ink: #13110f;
+  --orange: #ee5a2e;
+  --orange-deep: #c4421b; /* orange text on white (AA) */
+  --paper: #ffffff;
+  --fog: #f2f3f5; /* app background: cool neutral */
+  --line: #dde0e5;
+  --text-muted: #5b6270; /* secondary text (the shadcn `--muted` below is a surface, not text) */
+
+  /* Status (semantic only) */
+  --pass: #14532d;
+  --pass-bg: #e6efe9;
+  --warn: #7a4a00;
+  --warn-bg: #fff1d6;
+  --fail: #c1362c;
+  --fail-bg: #fbe6e3;
+
+  /* shadcn token names, mapped onto the brand tokens so existing utilities keep working */
+  --background: var(--fog);
+  --foreground: var(--ink);
+  --card: var(--paper);
+  --card-foreground: var(--ink);
+  --popover: var(--paper);
+  --popover-foreground: var(--ink);
+  --primary: var(--orange);
+  --primary-foreground: var(--ink); /* text on orange is ink: white on this orange fails AA */
+  --secondary: #e9ebee;
+  --secondary-foreground: var(--ink);
+  --muted: #eceef1; /* quiet surface */
+  --muted-foreground: var(--text-muted);
+  --accent: #fde4d9;
+  --accent-foreground: #8a2a0b;
+  --destructive: var(--fail);
+  --destructive-foreground: #ffffff;
+  --border: var(--line);
+  --input: #8b93a1; /* control borders: 3:1 against white */
+  --ring: var(--orange);
+  --radius: 0.375rem;
+
+  /* Solid dark surfaces (top bar, sidebar, interview header) */
+  --ink-2: #1e1b18;
+  --ink-border: #2f2b27;
+  --ink-foreground: #f5f3f0;
+  --ink-muted: #a9a39b;
+  --glow: var(--orange);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-border: var(--ink-border);
+  --color-ink-foreground: var(--ink-foreground);
+  --color-ink-muted: var(--ink-muted);
+  --color-glow: var(--glow);
+  --color-orange: var(--orange);
+  --color-orange-deep: var(--orange-deep);
+  --color-paper: var(--paper);
+  --color-fog: var(--fog);
+  --color-line: var(--line);
+  --color-pass: var(--pass);
+  --color-pass-bg: var(--pass-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-fail: var(--fail);
+  --color-fail-bg: var(--fail-bg);
+  --radius-sm: 4px;
+  --radius-md: 6px; /* controls */
+  --radius-lg: 8px; /* panels */
+  --radius-xl: 10px; /* hero data panel */
+  --font-sans: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* No monospace anywhere: `font-mono` utilities resolve to Archivo too. */
+  --font-mono: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html {
+  color-scheme: light;
+  -webkit-text-size-adjust: 100%;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-weight: 420;
+  font-stretch: 100%;
+  line-height: 1.55;
+  font-variant-numeric: lining-nums;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+  font-weight: 740;
+  font-stretch: 105%;
+  letter-spacing: -0.015em;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+p { text-wrap: pretty; }
+
+/* Hero / display headline: heavy, condensed-leaning, tight */
+.display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 90%;
+  letter-spacing: -0.03em;
+  line-height: 0.93;
+  text-wrap: balance;
+}
+
+/* Anchor targets sit clear of the top bar */
+[id] { scroll-margin-top: 5rem; }
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 100;
+  padding: 0.625rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--ink);
+  color: #fff;
+  font-weight: 600;
+}
+.skip-link:focus { top: 1rem; }
+
+/* ---- Dark sidebar ---- */
+/* NOTE: no `display` here - unlayered CSS beats Tailwind's layered utilities in v4 and would
+   defeat `hidden lg:flex`. Display is set with Tailwind classes in JSX. */
+.sidebar {
+  width: 252px;
+  flex-shrink: 0;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--ink);
+  color: var(--ink-foreground);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 10px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  font-weight: 560;
+  color: var(--ink-muted);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.nav-item:hover { background: var(--ink-2); color: var(--ink-foreground); }
+.nav-item.active {
+  background: var(--ink-2);
+  color: var(--ink-foreground);
+  box-shadow: inset 0 0 0 1px var(--ink-border);
+}
+
+.stat-num {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 740;
+  font-stretch: 100%;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.meter { height: 4px; border-radius: 2px; background: var(--muted); width: 64px; overflow: hidden; }
+.meter > span { display: block; height: 100%; border-radius: 2px; }
+
+.seg { height: 3px; flex: 1; border-radius: 2px; background: var(--border); }
+.seg.done { background: var(--primary); }
+.seg.current { background: var(--primary); height: 5px; margin-top: -1px; }
+
+.status-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+
+/* In the components layer on purpose: unlayered CSS beats every Tailwind utility in v4, which made
+   `underline`, `underline-offset-4` and `font-semibold` on a .link a silent no-op (links in body text
+   looked like plain text). Layered, a utility on the element wins, as intended. */
+@layer components {
+  .link { color: inherit; font-weight: 560; text-decoration: none; }
+  .link:hover { color: var(--orange-deep); text-decoration: underline; text-underline-offset: 3px; }
+}
+
+/* Numbers align in columns; no monospace face */
+.num { font-variant-numeric: tabular-nums; }
+
+/* ---- Auth spinner ---- */
+.auth-spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  animation: auth-spin 0.7s linear infinite;
+}
+@keyframes auth-spin { to { transform: rotate(360deg); } }
+
+/* ---- Interview answer options ---- */
+.option-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 560;
+  background: var(--card);
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+.option-row:hover { background: var(--accent); border-color: var(--orange-deep); }
+.option-row.selected {
+  border-color: var(--orange-deep);
+  box-shadow: 0 0 0 1px var(--orange-deep);
+  background: var(--accent);
+}
+
+.video-box {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--ink-border);
+  background: var(--ink);
+  object-fit: cover;
+}
+
+/* ---- Motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- Focus: always visible for keyboard users ---- */
+:focus:not(:focus-visible) { outline: none; }
+:focus-visible { outline: 2px solid var(--orange-deep); outline-offset: 2px; }
+.sidebar :focus-visible, .on-dark :focus-visible { outline-color: var(--orange); }
+
+/* ---- Scrollbar, selection ---- */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--muted); }
+::-webkit-scrollbar-thumb { background: #c7ccd4; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
+::selection { background: var(--orange); color: var(--ink); }
+
+.text-balance { text-wrap: balance; }

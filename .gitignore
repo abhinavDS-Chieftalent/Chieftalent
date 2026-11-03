@@ -1,0 +1,45 @@
+# Local secrets and runtime data
+.env
+.env.*
+!.env.example
+data/
+jobs/
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+
+# Frontend dependencies and local build/test artifacts
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/shots/
+
+# Generated media and presentation outputs
+brag-output*/
+presentation/
+pptx-qa/
+academic-*
+skill-*.md
+taste-skill.md
+vercel-guidelines.md
+start.bat
+frontend/slides-img/
+frontend/capture-demo.mjs
+frontend/zz_test_helper.py
+New Text Document.txt
+ChatGPT Image *.png
+
+# Local editor/agent configuration and OS files
+.claude/
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini

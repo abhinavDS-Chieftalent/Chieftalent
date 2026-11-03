@@ -1,0 +1,126 @@
+HOW CHIEFTALENT WORKS
+=====================
+
+From a job description to a hiring decision in six stages. The AI runs the
+first round and recommends. People make every decision.
+
+Who is involved
+  You            The recruiter or admin.
+  ChiefTalent    The platform and the AI.
+  Candidate      Takes the interview in their own browser.
+
+
+STAGE 1: ADD THE JOB
+--------------------
+You
+  - Paste the job description or upload a PDF.
+  - Set the shortlist line. The default is 70 out of 100.
+ChiefTalent
+  - Turns the job description into a clean structure and keeps a copy you can
+    download.
+Candidate
+  - Not involved yet.
+
+
+STAGE 2: CVS COME IN
+--------------------
+You
+  - Upload as many PDFs as you have.
+ChiefTalent
+  - Scores every CV against the job and says why.
+  - Catches exact duplicates and holds their interview link until you have
+    looked.
+Candidate
+  - Not involved yet.
+
+
+STAGE 3: GOOD FITS GET A LINK
+-----------------------------
+You
+  - Send a link to anyone the AI turned down, whenever you want a second look.
+ChiefTalent
+  - Above your line: a personal interview link is emailed.
+  - Below it: nothing is sent.
+Candidate
+  - Receives a link that belongs to them alone.
+
+
+STAGE 4: THE INTERVIEW
+----------------------
+You
+  - Nothing to do. Results fill in as it happens.
+ChiefTalent
+  - Writes the 20 questions from the job and the candidate's own CV.
+  - Watches the session with integrity checks:
+      * a second person in the room
+      * a phone in frame
+      * where the candidate is looking
+      * head position
+      * background voices
+      * photo or screen spoofing
+  - Warns on leaving full screen or switching tabs. A third warning ends the
+    interview.
+Candidate
+  - Confirms their email with a 6-digit code.
+  - Shares a few details for the hiring team. These are not scored.
+  - Checks camera and microphone.
+  - Then 30 minutes: one video answer and 20 multiple-choice questions.
+  - Finishes with a situation-based video question, answerable in about five
+    minutes. It shows how they handle a real work situation: working with
+    others, technical thinking, problem solving, decisions and communication.
+
+
+STAGE 5: THE AI EVALUATES
+-------------------------
+You
+  - Waiting for the evidence page.
+ChiefTalent
+  - Marks the multiple-choice answers.
+  - Turns speech into text on the platform, so accuracy never depends on the
+    candidate's browser.
+  - Scores the spoken answers from the transcript and reviews how each one was
+    delivered, with video and voice analysis.
+  - Recommends progress, review or reject, and gives its reasons.
+Candidate
+  - Finished.
+
+
+STAGE 6: YOU DECIDE
+-------------------
+You
+  - Open one page with the recordings, transcripts, answers and AI notes.
+  - Select, reject or ask for another look.
+  - Overrule any recommendation, or issue a fresh interview.
+ChiefTalent
+  - Keeps every score next to its reasons, so each recommendation can be
+    checked.
+Candidate
+  - Finished.
+
+
+WHERE A PERSON DECIDES
+----------------------
+  - Which job, and where the shortlist line sits.
+  - Whether a candidate the AI turned down still gets a link.
+  - Whether to progress, reject or look again after the evidence.
+  - Whether to issue a fresh interview.
+
+
+DATA AND ACCESS
+---------------
+What is stored
+  CVs, interview answers, recordings, transcripts and AI evaluations.
+What goes to the AI API
+  CV text and the transcripts of spoken answers, to score them and to write
+  interview questions.
+Deleting a candidate
+  Removes their CV, answers, recordings and evaluation.
+Access
+  Staff sign in as an admin or a recruiter. Each interview link is unique to
+  one candidate and needs an emailed code.
+
+
+CONTACT
+-------
+Sales questions: sales@dotstark.com
+Interview problems and candidate data requests: yash@dotstark.com

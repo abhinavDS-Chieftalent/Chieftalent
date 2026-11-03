@@ -1,0 +1,39 @@
+# ChiefTalent - AI crawler policy
+# Allows mainstream AI assistants to index public pages.
+# Private/admin areas are disallowed.
+
+User-agent: *
+Allow: /
+
+# Mainstream AI crawlers (explicit allow)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# Disallow private/authenticated routes
+Disallow: /login
+Disallow: /admin
+Disallow: /api/
+Disallow: /interview/
+Disallow: /terms
+Disallow: /privacy
+
+# Sitemap (optional - add when you have one)
+# Sitemap: https://chieftalent.dotstark.tech/sitemap.xml

@@ -1,0 +1,26 @@
+# Keep the image lean and secret-free
+.venv/
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+.git/
+.env
+.env.*
+!.env.example
+data/
+frontend/node_modules/
+frontend/dist/
+frontend/shots/
+frontend/test-*.mjs
+frontend/capture-demo.mjs
+node_modules/
+*.md
+!README.md
+presentation/
+pptx-qa/
+academic-*
+skill-*.md
+taste-skill.md
+vercel-guidelines.md
+start.bat

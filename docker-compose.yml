@@ -1,0 +1,50 @@
+services:
+  app:
+    build: .
+    container_name: chieftalent-app
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Container reaches the host's nim-proxy via the Docker Desktop bridge
+      NIM_BASE_URL: http://host.docker.internal:8100/v1
+      # Public origin used in interview links
+      BASE_URL: https://chieftalent.dotstark.tech
+      HOST: 0.0.0.0
+      PORT: "5000"
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "127.0.0.1:5000:5000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    develop:
+      watch:
+        # Python changes need a Gunicorn restart after they are copied in.
+        - action: sync+restart
+          path: ./app
+          target: /app/app
+          ignore:
+            - static/spa/
+        - action: sync+restart
+          path: ./run.py
+          target: /app/run.py
+        - action: sync+restart
+          path: ./scripts
+          target: /app/scripts
+        - action: sync+restart
+          path: ./jobs
+          target: /app/jobs
+        # Vite emits its compiled files here; sync them as the watch build updates them.
+        - action: sync
+          path: ./app/static/spa
+          target: /app/app/static/spa
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: chieftalent-tunnel
+    restart: unless-stopped
+    command: tunnel --config /etc/cloudflared/config.yml run
+    volumes:
+      - ${USERPROFILE}/.cloudflared:/etc/cloudflared:ro
+    depends_on:
+      - app

@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChiefTalent — Workflow Prototype</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy-dark: #0b223e;
+      --navy-mid: #1d3b5c;
+      --navy-muted: #526b88;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #4fa8f6;
+    }
+
+    /* Proportional 16:9 Stage Scaler so it looks identical to the 1920x1080 / 1600x900 PNG on any screen */
+    #viewport-wrapper {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: linear-gradient(180deg, #3488e8 0%, #7ec8f8 45%, #d9f1ff 100%);
+    }
+
+    #dashboard-stage {
+      width: 1600px;
+      height: 900px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+      transform-origin: center center;
+      background: linear-gradient(165deg, #3c92ec 0%, #6abaf7 28%, #bae3ff 62%, #e8f6ff 100%);
+    }
+
+    /* ================= FRUTIGER AERO GLASS TOKENS ================= */
+
+    /* Left Sidebar Outer Liquid Glass Shell */
+    .sidebar-shell {
+      position: relative;
+      background: linear-gradient(180deg,
+        rgba(17, 68, 122, 0.72) 0%,
+        rgba(14, 58, 104, 0.78) 45%,
+        rgba(18, 78, 118, 0.35) 72%,
+        rgba(11, 52, 82, 0.78) 100%
+      );
+      backdrop-filter: blur(14px) saturate(150%);
+      -webkit-backdrop-filter: blur(14px) saturate(150%);
+      border-radius: 26px;
+      border: 2.5px solid rgba(255, 255, 255, 0.78);
+      box-shadow:
+        0 16px 40px rgba(6, 36, 73, 0.45),
+        inset 0 0 0 2px rgba(135, 215, 255, 0.42),
+        inset 3px 0 12px rgba(255, 255, 255, 0.65),
+        inset -3px 0 12px rgba(255, 255, 255, 0.55),
+        0 0 22px rgba(120, 215, 255, 0.45);
+    }
+
+    /* Top Brand Capsule in Sidebar */
+    .brand-capsule {
+      position: relative;
+      background: linear-gradient(135deg,
+        rgba(28, 86, 152, 0.85) 0%,
+        rgba(46, 118, 194, 0.68) 60%,
+        rgba(145, 208, 252, 0.72) 100%
+      );
+      border-radius: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.85);
+      box-shadow:
+        0 8px 18px rgba(7, 32, 68, 0.38),
+        inset 0 2px 5px rgba(255, 255, 255, 0.85),
+        inset 0 -3px 8px rgba(18, 66, 126, 0.6),
+        0 0 0 2px rgba(14, 57, 105, 0.45);
+      overflow: hidden;
+    }
+    .brand-capsule::before {
+      content: '';
+      position: absolute;
+      top: -30%;
+      left: -10%;
+      width: 85%;
+      height: 75%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.02) 100%);
+      transform: rotate(-8deg);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    /* Orange 'H' Logo Badge */
+    .logo-h-box {
+      background: linear-gradient(180deg, #ff7b29 0%, #ff4c06 55%, #d93800 100%);
+      border-radius: 11px;
+      border: 1.5px solid rgba(255, 225, 190, 0.9);
+      box-shadow:
+        0 4px 10px rgba(217, 56, 0, 0.55),
+        inset 0 2px 3px rgba(255, 255, 255, 0.85),
+        inset 0 -2px 4px rgba(140, 25, 0, 0.6);
+      position: relative;
+      overflow: hidden;
+    }
+    .logo-h-box::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 48%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.08) 100%);
+      border-radius: 9px 9px 50% 50%;
+    }
+
+    /* Active Sidebar Item (Candidates) */
+    .nav-item-active {
+      position: relative;
+      background: linear-gradient(90deg,
+        rgba(37, 118, 206, 0.82) 0%,
+        rgba(64, 145, 224, 0.65) 55%,
+        rgba(82, 156, 228, 0.58) 100%
+      );
+      border-radius: 13px;
+      border: 1.8px solid rgba(255, 255, 255, 0.88);
+      box-shadow:
+        0 6px 15px rgba(6, 33, 68, 0.35),
+        inset 0 1.5px 3px rgba(255, 255, 255, 0.78),
+        inset 0 -2px 5px rgba(12, 56, 112, 0.5),
+        0 0 12px rgba(105, 198, 255, 0.45);
+      overflow: hidden;
+    }
+    .nav-item-active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 4px;
+      bottom: 4px;
+      width: 5px;
+      border-radius: 0 4px 4px 0;
+      background: linear-gradient(180deg, #ffb347 0%, #ff6b00 50%, #ff9922 100%);
+      box-shadow: 0 0 10px #ff7b00, 2px 0 8px rgba(255, 123, 0, 0.85);
+    }
+    .nav-item-active::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 4%;
+      right: 4%;
+      height: 45%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.02) 100%);
+      border-radius: 10px 10px 50% 50%;
+      pointer-events: none;
+    }
+
+    .nav-item-inactive {
+      border-radius: 11px;
+      transition: all 0.18s ease;
+    }
+    .nav-item-inactive:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    /* Sidebar Bottom Glass Cards */
+    .sidebar-bottom-card {
+      position: relative;
+      background: linear-gradient(180deg,
+        rgba(14, 52, 82, 0.76) 0%,
+        rgba(9, 36, 62, 0.86) 100%
+      );
+      backdrop-filter: blur(12px);
+      border-radius: 15px;
+      border: 1.5px solid rgba(210, 242, 255, 0.68);
+      box-shadow:
+        0 6px 16px rgba(4, 22, 42, 0.45),
+        inset 0 1.5px 2px rgba(255, 255, 255, 0.65),
+        inset 0 -1.5px 4px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+    }
+    .sidebar-bottom-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 42%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 100%);
+      pointer-events: none;
+    }
+
+    /* Search Bar Aero Pill */
+    .aero-search-bar {
+      background: linear-gradient(180deg,
+        rgba(220, 240, 255, 0.72) 0%,
+        rgba(188, 223, 252, 0.65) 50%,
+        rgba(212, 236, 255, 0.82) 100%
+      );
+      backdrop-filter: blur(12px);
+      border-radius: 13px;
+      border: 2px solid rgba(255, 255, 255, 0.92);
+      box-shadow:
+        0 6px 18px rgba(23, 86, 158, 0.22),
+        inset 0 2px 4px rgba(255, 255, 255, 0.95),
+        inset 0 -2px 4px rgba(112, 174, 232, 0.35),
+        0 0 0 1.5px rgba(108, 178, 240, 0.45);
+    }
+
+    /* ATS Threshold Pill */
+    .ats-pill {
+      background: linear-gradient(180deg,
+        rgba(235, 247, 255, 0.92) 0%,
+        rgba(195, 228, 255, 0.85) 100%
+      );
+      border-radius: 999px;
+      border: 1.5px solid rgba(255, 255, 255, 0.96);
+      box-shadow:
+        0 3px 8px rgba(28, 92, 160, 0.16),
+        inset 0 1.5px 2px rgba(255, 255, 255, 1),
+        0 0 0 1px rgba(125, 185, 240, 0.55);
+    }
+
+    /* KPI Cards Base */
+    .kpi-card {
+      position: relative;
+      height: 134px;
+      border-radius: 18px;
+      border: 2.2px solid rgba(255, 255, 255, 0.94);
+      overflow: hidden;
+      backdrop-filter: blur(16px);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .kpi-card:hover {
+      transform: translateY(-1px);
+    }
+    /* Inner glass rim */
+    .kpi-card::after {
+      content: '';
+      position: absolute;
+      inset: 3px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      pointer-events: none;
+    }
+    /* Diagonal top glossy reflection */
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      left: -15%;
+      width: 90%;
+      height: 95%;
+      background: linear-gradient(165deg, rgba(255,255,255,0.58) 0%, rgba(255,255,255,0.12) 48%, rgba(255,255,255,0) 60%);
+      transform: rotate(-12deg);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .kpi-blue {
+      background: linear-gradient(135deg,
+        rgba(232, 246, 255, 0.92) 0%,
+        rgba(195, 229, 255, 0.84) 55%,
+        rgba(150, 206, 252, 0.88) 100%
+      );
+      box-shadow:
+        0 10px 24px rgba(26, 94, 168, 0.22),
+        inset 0 2px 6px rgba(255, 255, 255, 0.95),
+        0 0 0 1.5px rgba(125, 192, 250, 0.55);
+    }
+
+    .kpi-green {
+      background: linear-gradient(135deg,
+        rgba(234, 252, 243, 0.94) 0%,
+        rgba(182, 238, 214, 0.84) 55%,
+        rgba(134, 224, 178, 0.88) 100%
+      );
+      box-shadow:
+        0 10px 24px rgba(22, 118, 84, 0.2),
+        inset 0 2px 6px rgba(255, 255, 255, 0.95),
+        0 0 0 1.5px rgba(130, 222, 178, 0.6);
+    }
+
+    .kpi-orange {
+      background: linear-gradient(135deg,
+        rgba(255, 246, 234, 0.94) 0%,
+        rgba(253, 222, 186, 0.86) 55%,
+        rgba(251, 188, 122, 0.88) 100%
+      );
+      box-shadow:
+        0 10px 24px rgba(168, 92, 20, 0.2),
+        inset 0 2px 6px rgba(255, 255, 255, 0.95),
+        0 0 0 1.5px rgba(248, 190, 130, 0.6);
+    }
+
+    .kpi-sky {
+      background: linear-gradient(135deg,
+        rgba(222, 241, 255, 0.92) 0%,
+        rgba(176, 218, 255, 0.85) 55%,
+        rgba(130, 194, 252, 0.9) 100%
+      );
+      box-shadow:
+        0 10px 24px rgba(24, 90, 165, 0.24),
+        inset 0 2px 6px rgba(255, 255, 255, 0.95),
+        0 0 0 1.5px rgba(120, 188, 250, 0.6);
+    }
+
+    /* Double-Rimmed Aero Glass Frame (Main Table & Right Column Cards) */
+    .aero-double-panel {
+      position: relative;
+      background: linear-gradient(180deg,
+        rgba(205, 234, 255, 0.72) 0%,
+        rgba(175, 218, 252, 0.62) 100%
+      );
+      backdrop-filter: blur(18px);
+      border-radius: 22px;
+      padding: 7px;
+      border: 2.2px solid rgba(255, 255, 255, 0.92);
+      box-shadow:
+        0 14px 34px rgba(18, 75, 138, 0.25),
+        inset 0 2px 6px rgba(255, 255, 255, 0.95),
+        inset 0 -2px 6px rgba(95, 168, 238, 0.45),
+        0 0 0 1.5px rgba(105, 180, 245, 0.55);
+    }
+
+    .aero-inner-surface {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(165deg,
+        rgba(247, 252, 255, 0.95) 0%,
+        rgba(235, 246, 255, 0.92) 55%,
+        rgba(242, 249, 255, 0.95) 100%
+      );
+      border-radius: 16px;
+      border: 1.5px solid rgba(255, 255, 255, 0.96);
+      box-shadow:
+        inset 0 2px 8px rgba(180, 218, 250, 0.32),
+        0 2px 8px rgba(32, 92, 156, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .aero-right-surface {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(165deg,
+        rgba(235, 247, 255, 0.92) 0%,
+        rgba(218, 238, 255, 0.88) 50%,
+        rgba(234, 246, 255, 0.94) 100%
+      );
+      border-radius: 16px;
+      border: 1.5px solid rgba(255, 255, 255, 0.96);
+      box-shadow:
+        inset 0 2px 8px rgba(255, 255, 255, 0.85),
+        0 2px 8px rgba(32, 92, 156, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Active Blue Filter Tab ('All (1)') */
+    .tab-pill-active {
+      position: relative;
+      background: linear-gradient(180deg,
+        #4da6ff 0%,
+        #1877f2 48%,
+        #0b5ed7 52%,
+        #2b88ff 100%
+      );
+      border-radius: 9px;
+      border: 1px solid #0a52be;
+      box-shadow:
+        0 4px 10px rgba(13, 10efd, 0.32),
+        inset 0 1.5px 1.5px rgba(255, 255, 255, 0.78),
+        inset 0 -1.5px 2px rgba(0, 45, 120, 0.5);
+      color: #ffffff;
+    }
+    .tab-pill-active::after {
+      content: '';
+      position: absolute;
+      bottom: -7px;
+      left: 2px;
+      right: 2px;
+      height: 3.5px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #0b65e6 0%, #2989ff 50%, #0b65e6 100%);
+      box-shadow: 0 1px 5px rgba(13, 102, 230, 0.65);
+    }
+
+    /* Glossy Orange Gel CTA Button */
+    .btn-gel-orange {
+      position: relative;
+      background: linear-gradient(180deg,
+        #ffb65c 0%,
+        #ff8c1a 46%,
+        #ea580c 52%,
+        #d9460f 85%,
+        #f97316 100%
+      );
+      border-radius: 11px;
+      border: 1.5px solid rgba(255, 235, 205, 0.92);
+      box-shadow:
+        0 6px 14px rgba(217, 70, 15, 0.38),
+        inset 0 2px 3px rgba(255, 255, 255, 0.9),
+        inset 0 -2px 4px rgba(135, 32, 0, 0.55),
+        0 0 0 1px rgba(194, 65, 12, 0.5);
+      color: #ffffff;
+      overflow: hidden;
+      transition: filter 0.15s ease, transform 0.12s ease;
+    }
+    .btn-gel-orange::before {
+      content: '';
+      position: absolute;
+      top: 1px;
+      left: 2%;
+      right: 2%;
+      height: 46%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.68) 0%, rgba(255,255,255,0.12) 100%);
+      border-radius: 9px 9px 40% 40%;
+      pointer-events: none;
+    }
+    .btn-gel-orange:hover {
+      filter: brightness(1.05);
+    }
+    .btn-gel-orange:active {
+      transform: scale(0.99);
+    }
+
+    /* Glossy Blue Gel CTA Button */
+    .btn-gel-blue {
+      position: relative;
+      background: linear-gradient(180deg,
+        #5cc0ff 0%,
+        #1e88e5 46%,
+        #0369a1 52%,
+        #0258a8 82%,
+        #2998ff 100%
+      );
+      border-radius: 11px;
+      border: 1.5px solid rgba(215, 242, 255, 0.95);
+      box-shadow:
+        0 6px 15px rgba(3, 105, 161, 0.4),
+        inset 0 2px 3px rgba(255, 255, 255, 0.92),
+        inset 0 -2px 5px rgba(0, 42, 95, 0.6),
+        0 0 0 1px rgba(2, 88, 168, 0.55);
+      color: #ffffff;
+      overflow: hidden;
+      transition: filter 0.15s ease, transform 0.12s ease;
+    }
+    .btn-gel-blue::before {
+      content: '';
+      position: absolute;
+      top: 1px;
+      left: 2%;
+      right: 2%;
+      height: 46%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.68) 0%, rgba(255,255,255,0.12) 100%);
+      border-radius: 9px 9px 40% 40%;
+      pointer-events: none;
+    }
+    .btn-gel-blue:hover {
+      filter: brightness(1.06);
+    }
+    .btn-gel-blue:active {
+      transform: scale(0.99);
+    }
+
+    /* Frosted Form Controls (Textarea, Select, File Input, White Buttons) */
+    .aero-input-box {
+      background: linear-gradient(180deg,
+        rgba(246, 251, 255, 0.95) 0%,
+        rgba(235, 245, 255, 0.92) 100%
+      );
+      border-radius: 10px;
+      border: 1.4px solid rgba(182, 212, 240, 0.88);
+      box-shadow:
+        inset 0 2px 4px rgba(148, 188, 226, 0.18),
+        0 1px 2px rgba(255, 255, 255, 0.9);
+    }
+    .aero-input-box:focus-within {
+      border-color: #3b9eff;
+      box-shadow: 0 0 0 2px rgba(59, 158, 255, 0.22);
+    }
+
+    .aero-white-btn {
+      background: linear-gradient(180deg,
+        #ffffff 0%,
+        #edf5fc 52%,
+        #e0eefb 100%
+      );
+      border-radius: 9px;
+      border: 1.3px solid rgba(175, 206, 235, 0.9);
+      box-shadow:
+        0 2px 5px rgba(20, 68, 120, 0.08),
+        inset 0 1px 1px #ffffff;
+      transition: all 0.15s ease;
+    }
+    .aero-white-btn:hover {
+      background: linear-gradient(180deg, #ffffff 0%, #e4f1fd 100%);
+      border-color: rgba(135, 184, 230, 1);
+    }
+
+    /* Candidate Table Row Card */
+    .candidate-row-strip {
+      background: linear-gradient(180deg,
+        rgba(252, 254, 255, 0.95) 0%,
+        rgba(244, 249, 255, 0.92) 100%
+      );
+      border-radius: 12px;
+      border: 1.3px solid rgba(212, 229, 246, 0.95);
+      box-shadow:
+        0 3px 10px rgba(24, 76, 136, 0.05),
+        inset 0 1px 0 #ffffff;
+    }
+
+    /* Custom Lens Flare Sparkle */
+    .sparkle-flare {
+      position: absolute;
+      pointer-events: none;
+      z-index: 30;
+    }
+
+    /* Toast feedback */
+    #aero-toast {
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .route-host{display:none;position:absolute;inset:0;z-index:30;overflow:hidden}.route-frame{height:100%;width:100%;display:flex;padding:10px;gap:18px;color:#0b223e}.route-sidebar{width:254px;flex:0 0 254px;height:100%;display:flex;flex-direction:column;justify-content:space-between;padding:11px}.route-main{min-width:0;flex:1;height:100%;display:flex;flex-direction:column;gap:14px}.route-head{height:74px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border:1px solid #fff;border-radius:18px;background:linear-gradient(180deg,#ffffffed,#e7f4ffdc);box-shadow:0 7px 18px #2f68a32b,inset 0 1px 2px #fff}.route-scroll{min-height:0;flex:1;overflow:auto;border-radius:20px;padding:3px}.route-panel{border:1px solid #fff;border-radius:20px;background:linear-gradient(155deg,#ffffffed,#e9f5ffeb);box-shadow:0 9px 22px #2564a02b,inset 0 1.5px 3px #fff,inset 0 -2px 5px #96c5ef77}.route-card{border-radius:17px;border:1px solid #ffffffec;background:linear-gradient(150deg,#fffffff2,#eaf5ffeb);box-shadow:0 6px 15px #2765a329,inset 0 1px 3px #fff}.route-host .field{width:100%;border:1px solid #b8d1e9;border-radius:10px;background:linear-gradient(180deg,#f8fcff,#e5f1fc);padding:11px 13px;color:#173252;outline:none;box-shadow:inset 0 2px 4px #345c8216}.route-host .field:focus{border-color:#58aaf2;box-shadow:0 0 0 3px #58aaf233}.route-host label{display:block;font-size:12px;font-weight:700;color:#3e5c7c;margin-bottom:6px}.route-host .route-title{font:800 27px/1.15 'Plus Jakarta Sans',sans-serif;color:#0c223f;letter-spacing:-.035em}.route-host .route-subtitle{font-size:12px;color:#526b88;margin-top:4px}.route-host .route-eyebrow{color:#1764ba;font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}.route-host .aero-mini-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;background:linear-gradient(180deg,#e9f5ff,#cfebff);border:1px solid #fff;color:#2365a8;font-size:10px;font-weight:800;box-shadow:0 3px 8px #2a72bd1c}.route-host .aero-mini-pill.orange{background:linear-gradient(180deg,#fff2df,#ffdfb1);color:#a65213}.route-host .aero-mini-pill.green{background:linear-gradient(180deg,#e5fff1,#c3f1d6);color:#197144}.route-host .route-brand{display:flex;align-items:center;gap:10px;color:white;font-size:20px;font-weight:800;letter-spacing:-.03em}.route-host .route-brand .logo-h-box{width:38px;height:38px;display:grid;place-items:center}.route-host .route-nav{height:43px;padding:0 12px;display:flex;align-items:center;border-radius:12px;color:#e4f2ff;font-size:13px;font-weight:600;margin:4px 0}.route-host .candidate-video{height:270px;border-radius:16px;position:relative;overflow:hidden;border:2px solid #fff;background:linear-gradient(160deg,#4897dc 0%,#b9def7 55%,#8cc8a7 56%,#4d9e77 100%);box-shadow:0 10px 22px #23578b38,inset 0 1px 9px #fff}.route-host .candidate-video:before{content:'';position:absolute;inset:auto -8% -24% -8%;height:49%;border-radius:50%;background:linear-gradient(180deg,#b9e4a6,#43a88f);box-shadow:0 -8px 28px #b9edff}.route-host .candidate-video:after{content:'';position:absolute;width:130px;height:130px;right:28px;top:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0 2%,#fffedb 5%,#90e5f4 34%,#5b9ee3 72%);box-shadow:0 0 35px #ecfff6}.route-host .recording-live{animation:argonPulse 1.4s infinite}@keyframes argonPulse{50%{opacity:.45}}@media(max-width:980px){.route-frame{gap:9px;padding:7px}.route-sidebar{width:210px;flex-basis:210px}.route-host .route-title{font-size:22px}}@media(prefers-reduced-motion:reduce){.route-host *,#dashboard-stage *{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+    #viewport-wrapper.candidate-mode{align-items:stretch}#dashboard-stage.candidate-mode{width:100vw;height:100vh;transform:none!important}.candidate-portal{color:#0b223e}.candidate-top{height:66px;flex:none;padding:0 18px}.candidate-mark{display:flex;align-items:center;gap:12px}.candidate-privacy{font-size:10px;color:#e5f3ff;font-weight:700;letter-spacing:.04em}.candidate-progress{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 20px}.candidate-progress-step{border-radius:10px;padding:9px 10px;text-align:center;background:linear-gradient(180deg,#eef5fb,#dce9f5);color:#68809a;font-size:10px;font-weight:800;border:1px solid #fff}.candidate-progress-step.active,.candidate-progress-step.done{background:linear-gradient(180deg,#4da6ff,#0b5ed7);color:#fff;box-shadow:0 4px 10px #1769c44d,inset 0 1px 2px #ffffffa8}.candidate-progress-step.done{background:linear-gradient(180deg,#55c995,#16835f)}.candidate-stage{width:min(860px,calc(100% - 30px));max-height:calc(100% - 20px);overflow:auto}.candidate-portal-card{background:linear-gradient(155deg,#ffffffed,#e9f5ffeb);border:1px solid #fff;border-radius:18px;padding:25px;box-shadow:inset 0 1px 3px #fff,0 8px 20px #2465a02a}.candidate-camera-scene{height:310px;border-radius:16px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,#4d91c8 0%,#21517d 45%,#103354 100%);border:2px solid #fff;box-shadow:0 10px 22px #23578b38,inset 0 1px 9px #ffffff76}.candidate-camera-scene:before{content:'';position:absolute;width:420px;height:180px;border-radius:50%;left:50%;top:52%;transform:translate(-50%,-50%);background:radial-gradient(ellipse,#8fd9ed46 0%,#68b4e526 48%,transparent 72%);filter:blur(2px)}.candidate-camera-scene:after{content:'';position:absolute;width:180px;height:180px;right:-55px;top:-80px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff9,#d8ffff72 18%,#68d3ef18 60%,transparent 75%)}.candidate-camera-copy{position:absolute;z-index:1;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#e8f7ff;text-align:center}.candidate-camera-copy svg{width:42px;height:42px;opacity:.9;margin-bottom:10px}.candidate-camera-copy strong{font-size:13px}.candidate-camera-copy span{font-size:10px;opacity:.8;margin-top:5px}.candidate-record-dot{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:6px 10px;background:#0b294cce;color:white;font-weight:800;font-size:10px}.candidate-record-dot i{width:8px;height:8px;border-radius:50%;background:#80d8f2}.candidate-record-dot.is-recording i{background:#ff6a48;box-shadow:0 0 0 4px #ff6a4840;animation:argonPulse 1s infinite}.candidate-footer{font-size:10px;color:#e4f3ff;text-shadow:0 1px 4px #10416d;text-align:center;padding:7px 0}.candidate-portal .field{user-select:text}.candidate-portal textarea{resize:vertical}@media(max-width:760px){.candidate-top{padding:0 10px}.candidate-stage{width:calc(100% - 16px)}.candidate-portal-card{padding:16px}.candidate-progress{gap:4px}.candidate-progress-step{padding:7px 3px;font-size:9px}.candidate-camera-scene{height:235px}}
+  </style>
+</head>
+<body>
+
+<div id="viewport-wrapper">
+  <div id="dashboard-stage">
+
+    <!-- ==================== LAYER 0: FRUTIGER AERO SKY, CLOUDS, RAYS & CITYSCAPE BACKGROUND ==================== -->
+    <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1600 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Sky Gradients -->
+        <linearGradient id="skyGrad" x1="0%" y1="0%" x2="25%" y2="100%">
+          <stop offset="0%" stop-color="#2a82e4" />
+          <stop offset="22%" stop-color="#5db3f8" />
+          <stop offset="52%" stop-color="#a8dcfe" />
+          <stop offset="82%" stop-color="#dff3ff" />
+          <stop offset="100%" stop-color="#cae9ff" />
+        </linearGradient>
+
+        <radialGradient id="sunBurst" cx="18%" cy="4%" r="48%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.98" />
+          <stop offset="28%" stop-color="#e8f7ff" stop-opacity="0.82" />
+          <stop offset="60%" stop-color="#8fd1ff" stop-opacity="0.35" />
+          <stop offset="100%" stop-color="#3a95ef" stop-opacity="0" />
+        </radialGradient>
+
+        <radialGradient id="bottomCenterGlow" cx="55%" cy="85%" r="45%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+          <stop offset="55%" stop-color="#d8f0ff" stop-opacity="0.5" />
+          <stop offset="100%" stop-color="#7ec4fa" stop-opacity="0" />
+        </radialGradient>
+
+        <!-- Light Ray Gradient -->
+        <linearGradient id="rayGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.45" />
+          <stop offset="60%" stop-color="#ffffff" stop-opacity="0.12" />
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+        </linearGradient>
+
+        <!-- Water Reflection Gradient -->
+        <linearGradient id="lakeWater" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#3ab7d8" />
+          <stop offset="30%" stop-color="#198eb8" />
+          <stop offset="70%" stop-color="#0d608a" />
+          <stop offset="100%" stop-color="#073b5c" />
+        </linearGradient>
+
+        <!-- Lush Green Hills Gradient -->
+        <linearGradient id="hillBright" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#8be04e" />
+          <stop offset="45%" stop-color="#43b639" />
+          <stop offset="100%" stop-color="#1c742b" />
+        </linearGradient>
+
+        <linearGradient id="hillDeep" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#58c844" />
+          <stop offset="60%" stop-color="#278c32" />
+          <stop offset="100%" stop-color="#115422" />
+        </linearGradient>
+
+        <!-- Skyscraper Glass Gradients -->
+        <linearGradient id="bldgGlass1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#e3f6ff" />
+          <stop offset="35%" stop-color="#83c7f2" />
+          <stop offset="100%" stop-color="#2b6da8" />
+        </linearGradient>
+        <linearGradient id="bldgGlass2" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#ffffff" />
+          <stop offset="30%" stop-color="#a5dbf8" />
+          <stop offset="100%" stop-color="#357ab8" />
+        </linearGradient>
+
+        <!-- Aero Wave Ribbon Gradient -->
+        <linearGradient id="aeroWaveGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.88" />
+          <stop offset="35%" stop-color="#8cf0ff" stop-opacity="0.52" />
+          <stop offset="75%" stop-color="#38b6ff" stop-opacity="0.28" />
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="0.65" />
+        </linearGradient>
+
+        <filter id="cloudBlur" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="16" />
+        </filter>
+        <filter id="softBlur" x="-10%" y="-10%" width="120%" height="120%">
+          <feGaussianBlur stdDeviation="6" />
+        </filter>
+      </defs>
+
+      <!-- Base Sky -->
+      <rect width="1600" height="900" fill="url(#skyGrad)" />
+      <rect width="1600" height="900" fill="url(#sunBurst)" />
+      <rect width="1600" height="900" fill="url(#bottomCenterGlow)" />
+
+      <!-- Diagonal Sun Rays -->
+      <polygon points="180,-20 360,-20 980,900 680,900" fill="url(#rayGrad)" />
+      <polygon points="450,-20 690,-20 1380,900 1060,900" fill="url(#rayGrad)" opacity="0.65" />
+      <polygon points="980,-20 1180,-20 1600,520 1600,260" fill="url(#rayGrad)" opacity="0.5" />
+
+      <!-- Fluffy Frutiger Aero Clouds Top Left & Center -->
+      <g filter="url(#cloudBlur)" opacity="0.92">
+        <ellipse cx="290" cy="42" rx="180" ry="62" fill="#ffffff" />
+        <ellipse cx="440" cy="35" rx="160" ry="54" fill="#f2faff" />
+        <ellipse cx="620" cy="24" rx="190" ry="48" fill="#ffffff" />
+        <ellipse cx="830" cy="38" rx="150" ry="44" fill="#e6f5ff" />
+        <ellipse cx="180" cy="95" rx="130" ry="45" fill="#ffffff" />
+      </g>
+      <!-- Crisp Cloud Highlights -->
+      <g filter="url(#softBlur)" opacity="0.78">
+        <circle cx="240" cy="38" r="46" fill="#ffffff" />
+        <circle cx="310" cy="28" r="58" fill="#ffffff" />
+        <circle cx="390" cy="40" r="48" fill="#ffffff" />
+        <circle cx="560" cy="26" r="52" fill="#ffffff" />
+        <circle cx="640" cy="22" r="44" fill="#ffffff" />
+      </g>
+
+      <!-- Sweeping Background Glass Arcs Across Right & Bottom -->
+      <path d="M 850,900 Q 1120,620 1600,580 L 1600,900 Z" fill="rgba(255,255,255,0.22)" />
+      <path d="M 820,900 Q 1130,600 1600,565" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="2.5" />
+
+      <!-- ================= FRUTIGER AERO CITYSCAPE & NATURE (LEFT SIDEBAR WINDOW) ================= -->
+      <g id="sidebar-scenery">
+        <!-- Distant Sun Glow behind buildings -->
+        <circle cx="215" cy="495" r="115" fill="#fffbe6" opacity="0.65" filter="url(#cloudBlur)" />
+
+        <!-- Background Haze Mountain -->
+        <path d="M 0,560 Q 110,490 280,575 L 280,660 L 0,660 Z" fill="#6fb5dc" opacity="0.55" />
+
+        <!-- Skyscraper 1 (Left-Center Tall Glass Tower) -->
+        <g transform="translate(86, 488)">
+          <polygon points="0,18 22,0 22,125 0,125" fill="url(#bldgGlass2)" />
+          <polygon points="22,0 44,12 44,125 22,125" fill="#23649e" />
+          <!-- Window grid lines -->
+          <line x1="6" y1="20" x2="6" y2="115" stroke="#ffffff" stroke-opacity="0.55" stroke-width="1.2" />
+          <line x1="12" y1="14" x2="12" y2="115" stroke="#ffffff" stroke-opacity="0.55" stroke-width="1.2" />
+          <line x1="17" y1="8" x2="17" y2="115" stroke="#ffffff" stroke-opacity="0.55" stroke-width="1.2" />
+          <line x1="28" y1="10" x2="28" y2="115" stroke="#8ad4ff" stroke-opacity="0.4" stroke-width="1.2" />
+          <line x1="35" y1="14" x2="35" y2="115" stroke="#8ad4ff" stroke-opacity="0.4" stroke-width="1.2" />
+        </g>
+
+        <!-- Skyscraper 2 (Far Left Mid Tower) -->
+        <g transform="translate(52, 520)">
+          <rect x="0" y="0" width="26" height="90" fill="url(#bldgGlass1)" />
+          <rect x="26" y="4" width="10" height="86" fill="#1d568a" />
+          <line x1="5" y1="6" x2="5" y2="85" stroke="#ffffff" stroke-opacity="0.5" stroke-width="1" />
+          <line x1="12" y1="6" x2="12" y2="85" stroke="#ffffff" stroke-opacity="0.5" stroke-width="1" />
+          <line x1="19" y1="6" x2="19" y2="85" stroke="#ffffff" stroke-opacity="0.5" stroke-width="1" />
+        </g>
+
+        <!-- Skyscraper 3 (Center-Right Tallest Curved Spire Tower) -->
+        <g transform="translate(152, 472)">
+          <!-- Spire -->
+          <line x1="18" y1="-22" x2="18" y2="5" stroke="#ffffff" stroke-width="2" />
+          <polygon points="4,12 18,0 18,145 4,145" fill="url(#bldgGlass2)" />
+          <polygon points="18,0 36,10 36,145 18,145" fill="#2c73b0" />
+          <!-- Horizontal floors -->
+          <line x1="5" y1="24" x2="35" y2="28" stroke="#ffffff" stroke-opacity="0.45" stroke-width="1" />
+          <line x1="5" y1="40" x2="35" y2="44" stroke="#ffffff" stroke-opacity="0.45" stroke-width="1" />
+          <line x1="5" y1="56" x2="35" y2="60" stroke="#ffffff" stroke-opacity="0.45" stroke-width="1" />
+          <line x1="5" y1="72" x2="35" y2="76" stroke="#ffffff" stroke-opacity="0.45" stroke-width="1" />
+          <line x1="5" y1="88" x2="35" y2="92" stroke="#ffffff" stroke-opacity="0.45" stroke-width="1" />
+        </g>
+
+        <!-- Skyscraper 4 (Right Stepped Modern Tower) -->
+        <g transform="translate(194, 498)">
+          <rect x="0" y="0" width="22" height="122" fill="url(#bldgGlass1)" />
+          <rect x="22" y="14" width="16" height="108" fill="#3a85c4" />
+          <rect x="38" y="34" width="14" height="88" fill="#5da6de" />
+          <!-- Sun glare on tower edge -->
+          <circle cx="22" cy="8" r="14" fill="#ffffff" opacity="0.85" filter="url(#softBlur)" />
+        </g>
+
+        <!-- Small City Buildings in Valley -->
+        <rect x="132" y="548" width="18" height="65" fill="#7ec2eb" />
+        <rect x="118" y="562" width="16" height="50" fill="#5499c9" />
+        <rect x="234" y="555" width="20" height="62" fill="#89ccf0" />
+
+        <!-- Lush Green Rolling Hills (Left & Mid) -->
+        <path d="M -10,555 Q 55,562 115,605 Q 168,638 220,646 L -10,652 Z" fill="url(#hillDeep)" />
+        <path d="M -10,572 Q 48,582 98,618 Q 145,645 190,650 L -10,652 Z" fill="url(#hillBright)" />
+        <!-- Right Greenery Bank -->
+        <path d="M 155,638 Q 215,612 285,625 L 285,654 L 155,654 Z" fill="url(#hillBright)" />
+
+        <!-- Foliage Tree Clusters & Shoreline Details -->
+        <g fill="#a3f25c" opacity="0.75">
+          <circle cx="22" cy="585" r="9" />
+          <circle cx="36" cy="592" r="11" />
+          <circle cx="58" cy="604" r="8" />
+          <circle cx="75" cy="614" r="10" />
+          <circle cx="105" cy="628" r="7" />
+          <circle cx="218" cy="634" r="9" />
+          <circle cx="236" cy="630" r="11" />
+        </g>
+
+        <!-- Shoreline Beach/Promenade Strip -->
+        <path d="M 0,647 L 280,649 L 280,653 L 0,651 Z" fill="#e2f3d5" opacity="0.85" />
+
+        <!-- Reflective Turquoise & Azure Lake Water (Bottom of Sidebar) -->
+        <rect x="0" y="650" width="285" height="250" fill="url(#lakeWater)" />
+
+        <!-- Water Reflections of Green Hills & Skyscrapers -->
+        <g opacity="0.42">
+          <path d="M 0,652 L 175,652 L 110,705 L 0,715 Z" fill="#389c42" />
+          <rect x="88" y="652" width="36" height="65" fill="#b8e8ff" />
+          <rect x="155" y="652" width="32" height="75" fill="#d4f2ff" />
+          <rect x="195" y="652" width="34" height="68" fill="#bfeaff" />
+        </g>
+
+        <!-- Horizontal Water Shimmer Ripples -->
+        <g stroke="#b8f2ff" stroke-linecap="round" opacity="0.65">
+          <line x1="18" y1="664" x2="78" y2="664" stroke-width="1.5" />
+          <line x1="95" y1="668" x2="185" y2="668" stroke-width="2" />
+          <line x1="140" y1="676" x2="235" y2="676" stroke-width="1.5" />
+          <line x1="45" y1="684" x2="130" y2="684" stroke-width="1.2" />
+          <line x1="110" y1="692" x2="210" y2="692" stroke-width="1.8" />
+          <line x1="25" y1="704" x2="95" y2="704" stroke-width="1.2" />
+          <line x1="130" y1="708" x2="245" y2="708" stroke-width="1.5" />
+        </g>
+
+        <!-- Sweeping Translucent Frutiger Aero Glass Wave Ribbon Over City/Water -->
+        <path d="M -15,606 Q 95,608 188,652 Q 245,680 285,712 L 285,672 Q 225,632 135,596 Q 55,568 -15,574 Z" fill="url(#aeroWaveGrad)" />
+        <path d="M -15,606 Q 95,608 188,652 Q 245,680 285,712" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-opacity="0.9" />
+        <path d="M -15,574 Q 55,568 135,596 Q 225,632 285,672" fill="none" stroke="#a6f0ff" stroke-width="1.6" stroke-opacity="0.8" />
+
+        <!-- Bright Water Sparkle Lens Flare on Wave -->
+        <circle cx="96" cy="642" r="14" fill="#ffffff" opacity="0.9" filter="url(#softBlur)" />
+        <circle cx="96" cy="642" r="4" fill="#ffffff" />
+        <line x1="74" y1="642" x2="118" y2="642" stroke="#ffffff" stroke-width="1.8" opacity="0.9" />
+        <line x1="96" y1="622" x2="96" y2="662" stroke="#ffffff" stroke-width="1.8" opacity="0.9" />
+      </g>
+    </svg>
+
+    <!-- ==================== MAIN 3-COLUMN LAYOUT ==================== -->
+    <div id="dashboard-app" class="relative z-10 w-full h-full flex px-[10px] py-[8px] gap-[18px]">
+
+      <!-- ==================== 1. LEFT SIDEBAR (254px wide) ==================== -->
+      <aside class="sidebar-shell w-[254px] h-full flex flex-col justify-between p-[11px] flex-shrink-0 select-none">
+
+        <!-- Top Group: Brand Capsule + Navigation -->
+        <div>
+          <!-- Glossy Brand Header Capsule -->
+          <div class="brand-capsule h-[78px] px-[16px] flex items-center gap-[13px] mb-[22px]">
+            <div class="logo-h-box w-[40px] h-[40px] flex items-center justify-center flex-shrink-0">
+              <span class="text-white font-extrabold text-[22px] leading-none tracking-tight relative z-10">C</span>
+            </div>
+            <span class="text-white font-bold text-[22px] tracking-[-0.02em] drop-shadow-[0_2px_4px_rgba(0,25,60,0.5)] relative z-10">ChiefTalent</span>
+          </div>
+
+          <!-- Workspace Navigation -->
+          <div class="px-[6px]">
+            <div class="text-[#b8d9f8] text-[13px] font-medium mb-[10px] pl-[6px] tracking-wide opacity-90">
+              Workspace
+            </div>
+
+            <!-- Active: Candidates -->
+            <button id="nav-candidates" onclick="switchSidebarNav('candidates')" class="nav-item-active w-full h-[46px] px-[14px] flex items-center justify-between text-white mb-[6px] cursor-pointer">
+              <div class="flex items-center gap-[12px] relative z-10">
+                <!-- Two-Person Solid Icon -->
+                <svg class="w-[20px] h-[20px] text-white drop-shadow" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-3.31 0-6 2.24-6 5v1h12v-1c0-2.76-2.69-5-6-5zm7.5-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 2c-.73 0-1.41.16-2.02.43A6.97 6.97 0 0 1 17 18v1h4.5v-1c0-2.21-2.01-4-4.5-4z"/>
+                </svg>
+                <span class="font-semibold text-[15.5px] tracking-[-0.01em] drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Candidates</span>
+              </div>
+              <span id="sidebar-cand-badge" class="relative z-10 w-[26px] h-[26px] rounded-[8px] bg-[#175094]/80 border border-white/50 flex items-center justify-center text-[13.5px] font-bold text-white shadow-inner">
+                1
+              </span>
+            </button>
+
+            <!-- Analytics -->
+            <button id="nav-analytics" onclick="switchSidebarNav('analytics')" class="nav-item-inactive w-full h-[44px] px-[14px] flex items-center gap-[12px] text-[#e4f2ff] hover:text-white mb-[4px] cursor-pointer">
+              <svg class="w-[19px] h-[19px] text-[#d5ecff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 3v18h18"/>
+                <path d="M7 16v-5"/>
+                <path d="M12 16V8"/>
+                <path d="M17 16v-3"/>
+              </svg>
+              <span class="font-medium text-[15px]">Analytics</span>
+            </button>
+
+            <!-- Settings -->
+            <button id="nav-settings" onclick="switchSidebarNav('settings')" class="nav-item-inactive w-full h-[44px] px-[14px] flex items-center gap-[12px] text-[#e4f2ff] hover:text-white cursor-pointer">
+              <svg class="w-[19px] h-[19px] text-[#d5ecff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span class="font-medium text-[15px]">Settings</span>
+            </button>
+          </div>
+
+          <!-- Roles Navigation Section -->
+          <div class="px-[6px] mt-[26px]">
+            <div class="text-[#b8d9f8] text-[13px] font-medium mb-[10px] pl-[6px] tracking-wide opacity-90">
+              Roles
+            </div>
+
+            <div id="sidebar-roles-list" class="space-y-[5px]">
+              <!-- Role 1 -->
+              <button onclick="filterByRole('Junior AI Engineer Generative')" class="nav-item-inactive w-full h-[42px] px-[12px] flex items-center gap-[11px] text-[#e8f4ff] hover:text-white text-left cursor-pointer">
+                <svg class="w-[18px] h-[18px] text-[#cce6ff] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                  <path d="M2 12h20"/>
+                </svg>
+                <span class="font-medium text-[14.2px] truncate">Junior AI Engineer Genera...</span>
+              </button>
+
+              <!-- Role 2 -->
+              <button onclick="filterByRole('junior front end developer')" class="nav-item-inactive w-full h-[42px] px-[12px] flex items-center gap-[11px] text-[#e8f4ff] hover:text-white text-left cursor-pointer">
+                <svg class="w-[18px] h-[18px] text-[#cce6ff] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                  <path d="M2 12h20"/>
+                </svg>
+                <span class="font-medium text-[14.2px] truncate">Junior Front End Develop...</span>
+              </button>
+
+              <!-- Role 3 -->
+              <button onclick="filterByRole('Senior Python Developer')" class="nav-item-inactive w-full h-[42px] px-[12px] flex items-center gap-[11px] text-[#e8f4ff] hover:text-white text-left cursor-pointer">
+                <svg class="w-[18px] h-[18px] text-[#cce6ff] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                  <path d="M2 12h20"/>
+                </svg>
+                <span class="font-medium text-[14.2px] truncate">Senior Python Developer</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Group: AI Connected Card + User Profile Card -->
+        <div class="space-y-[10px] relative z-10">
+          <!-- AI Connected Status Card -->
+          <div class="sidebar-bottom-card px-[14px] py-[12px]">
+            <div class="flex items-center gap-[9px] mb-[6px]">
+              <span class="w-[11px] h-[11px] rounded-full bg-[#4ade80] shadow-[0_0_10px_#22c55e,inset_0_1px_2px_#ffffff] inline-block flex-shrink-0"></span>
+              <span class="text-white font-semibold text-[13.5px] leading-none">AI connected</span>
+            </div>
+            <div class="text-[#b8d8f0] text-[10.8px] font-medium tracking-[0.03em] truncate uppercase">
+              SCREENING API · CONNECTED
+            </div>
+          </div>
+
+          <!-- User Profile Card -->
+          <div class="sidebar-bottom-card px-[12px] py-[11px] flex items-center justify-between">
+            <div class="flex items-center gap-[10px] min-w-0">
+              <!-- Avatar Circle -->
+              <div class="w-[38px] h-[38px] rounded-full bg-gradient-to-b from-[#4f749c] to-[#2e4d70] border border-white/40 flex items-center justify-center text-white font-bold text-[15px] flex-shrink-0 shadow-inner">
+                Y
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-[6px]">
+                  <span class="text-white font-bold text-[14.5px] leading-tight">Yash</span>
+                  <span class="px-[7px] py-[1.5px] rounded-[6px] bg-gradient-to-b from-[#ff7a22] to-[#d9460f] border border-[#ffb078]/70 text-white font-extrabold text-[9.5px] uppercase tracking-wider shadow-sm">
+                    ADMIN
+                  </span>
+                </div>
+                <div class="text-[#c0dcf2] text-[12px] truncate mt-[1px]">
+                  yash@dotstark.com
+                </div>
+              </div>
+            </div>
+            <!-- Logout Button -->
+            <button onclick="showToast('Signed out notification simulated')" title="Sign out" class="text-[#d2e9ff] hover:text-white p-[5px] rounded-lg hover:bg-white/10 transition cursor-pointer flex-shrink-0">
+              <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bottom Liquid Glass Curved Rim Highlight Overlay -->
+        <svg class="absolute bottom-0 left-0 w-full h-[55px] pointer-events-none" viewBox="0 0 254 55" fill="none">
+          <path d="M 8,50 Q 127,32 246,50" stroke="rgba(255,255,255,0.55)" stroke-width="2" fill="none"/>
+        </svg>
+      </aside>
+
+      <!-- ==================== 2 & 3. MAIN CONTENT + RIGHT SIDEBAR WRAPPER ==================== -->
+      <div class="flex-1 h-full flex flex-col pt-[16px] pr-[4px] pb-[4px] min-w-0">
+
+        <!-- TOP HEADER ROW (Candidates Title on Left + Search Bar on Far Right) -->
+        <header class="flex items-start justify-between mb-[16px] pl-[12px] pr-[4px]">
+          <!-- Title & Subtitle -->
+          <div>
+            <h1 class="text-[#0c223f] font-extrabold text-[40px] leading-[1.08] tracking-[-0.025em] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]">
+              Candidates
+            </h1>
+            <div class="flex items-center gap-[12px] mt-[6px]">
+              <p class="text-[#163254] text-[15px] font-medium tracking-[-0.01em]">
+                Screen CVs against a role, send interviews, review results.
+              </p>
+              <div class="ats-pill px-[14px] py-[3.5px] flex items-center gap-[6px] text-[#0f3156] text-[11.5px] font-bold tracking-[0.03em]">
+                <span>ATS THRESHOLD</span>
+                <span class="font-extrabold text-[#0b2545]">70</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top-Right Aero Search Input -->
+          <div class="aero-search-bar w-[362px] h-[42px] px-[14px] flex items-center gap-[10px] mt-[2px]">
+            <svg class="w-[17px] h-[17px] text-[#3b6088] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input
+              id="search-input"
+              type="text"
+              oninput="handleSearch(this.value)"
+              placeholder="Search candidates, roles..."
+              class="w-full bg-transparent border-none outline-none text-[#123052] placeholder-[#4a6d92] text-[13.8px] font-medium select-text"
+            />
+          </div>
+        </header>
+
+        <!-- LOWER BODY GRID: Center Column (KPIs + Table) & Right Column (Add JD + Screen CVs) -->
+        <div class="flex-1 flex gap-[18px] min-h-0 pl-[6px]">
+
+          <!-- ==================== 2. CENTER MAIN COLUMN ==================== -->
+          <div class="flex-1 flex flex-col gap-[16px] min-w-0 h-full">
+
+            <!-- 4 KPI METRIC CARDS ROW -->
+            <div class="grid grid-cols-4 gap-[14px]">
+
+              <!-- KPI 1: Total candidates -->
+              <div class="kpi-card kpi-blue p-[18px] flex flex-col justify-between">
+                <div class="relative z-10 text-[#132d4e] font-semibold text-[14px] tracking-[-0.01em]">
+                  Total candidates
+                </div>
+                <div id="kpi-total" class="relative z-10 text-[#0b213d] font-extrabold text-[38px] leading-none tracking-tight mb-[6px]">
+                  1
+                </div>
+
+                <!-- Custom 3D Glossy Blue People + Glass Wave SVG -->
+                <svg class="
+                absolute right-0 bottom-0 w-[155px] h-[118px] pointer-events-none" viewBox="0 0 155 118" fill="none">
+                  <defs>
+                    <linearGradient id="waveBlue" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85"/>
+                      <stop offset="50%" stop-color="#60b5ff" stop-opacity="0.55"/>
+                      <stop offset="100%" stop-color="#1d74e8" stop-opacity="0.35"/>
+                    </linearGradient>
+                    <linearGradient id="personGradMain" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#4da6ff"/>
+                      <stop offset="45%" stop-color="#1565d8"/>
+                      <stop offset="100%" stop-color="#68b8ff"/>
+                    </linearGradient>
+                    <linearGradient id="personGradSide" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#5eb5ff"/>
+                      <stop offset="55%" stop-color="#2275e6"/>
+                      <stop offset="100%" stop-color="#8aceff"/>
+                    </linearGradient>
+                  </defs>
+                  <!-- Sweeping Glass Wave Curve -->
+                  <path d="M 10,118 Q 58,42 155,22 L 155,118 Z" fill="url(#waveBlue)"/>
+                  <path d="M 10,118 Q 58,42 155,22" stroke="#ffffff" stroke-width="2.2" stroke-opacity="0.9"/>
+                  <path d="M 28,118 Q 75,65 155,50" stroke="#ffffff" stroke-width="1.3" stroke-opacity="0.65"/>
+
+                  <!-- Left Person -->
+                  <circle cx="75" cy="70" r="8" fill="url(#personGradSide)" stroke="#ffffff" stroke-width="0.8"/>
+                  <path d="M 61,96 C 61,85 89,85 89,96 Z" fill="url(#personGradSide)" stroke="#ffffff" stroke-width="0.8"/>
+
+                  <!-- Right Person -->
+                  <circle cx="119" cy="70" r="8" fill="url(#personGradSide)" stroke="#ffffff" stroke-width="0.8"/>
+                  <path d="M 105,96 C 105,85 133,85 133,96 Z" fill="url(#personGradSide)" stroke="#ffffff" stroke-width="0.8"/>
+
+                  <!-- Center Foreground Person -->
+                  <circle cx="97" cy="63" r="10.5" fill="url(#personGradMain)" stroke="#ffffff" stroke-width="1"/>
+                  <ellipse cx="94" cy="59" rx="4" ry="2.2" fill="#ffffff" fill-opacity="0.55"/>
+                  <path d="M 78,99 C 78,83 116,83 116,99 Z" fill="url(#personGradMain)" stroke="#ffffff" stroke-width="1"/>
+                  <!-- Gloss highlight on chest -->
+                  <path d="M 83,93 C 86,86 108,86 111,93" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.55" stroke-linecap="round"/>
+                </svg>
+              </div>
+
+              <!-- KPI 2: Shortlisted -->
+              <div class="kpi-card kpi-green p-[18px] flex flex-col justify-between">
+                <div class="relative z-10 text-[#132d4e] font-semibold text-[14px] tracking-[-0.01em]">
+                  Shortlisted
+                </div>
+                <div id="kpi-shortlisted" class="relative z-10 text-[#0b213d] font-extrabold text-[38px] leading-none tracking-tight mb-[6px]">
+                  1
+                </div>
+
+                <!-- Custom 3D Glossy Green Checklist / Documents SVG -->
+                <svg class="absolute right-0 bottom-0 w-[160px] h-[122px] pointer-events-none" viewBox="0 0 160 122" fill="none">
+                  <defs>
+                    <linearGradient id="greenCardBack" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#bbf7d0" stop-opacity="0.85"/>
+                      <stop offset="100%" stop-color="#34d399" stop-opacity="0.65"/>
+                    </linearGradient>
+                    <linearGradient id="greenCardFront" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#86efac" stop-opacity="0.92"/>
+                      <stop offset="45%" stop-color="#22c55e" stop-opacity="0.85"/>
+                      <stop offset="100%" stop-color="#15803d" stop-opacity="0.9"/>
+                    </linearGradient>
+                  </defs>
+                  <!-- Glass Wave Ribbon -->
+                  <path d="M 5,122 Q 65,68 160,18 L 160,122 Z" fill="rgba(255,255,255,0.32)"/>
+                  <path d="M 5,122 Q 65,68 160,18" stroke="#ffffff" stroke-width="2" stroke-opacity="0.85"/>
+
+                  <!-- Back Tilted Glass Card -->
+                  <g transform="translate(88, 38) rotate(8)">
+                    <rect x="0" y="0" width="54" height="68" rx="9" fill="url(#greenCardBack)" stroke="#ffffff" stroke-width="1.5"/>
+                  </g>
+
+                  <!-- Front Tilted Glossy Green Document Card -->
+                  <g transform="translate(62, 54) rotate(-14)">
+                    <rect x="0" y="0" width="58" height="66" rx="10" fill="url(#greenCardFront)" stroke="#ffffff" stroke-width="1.8"/>
+                    <!-- Top specular sheen -->
+                    <path d="M 2,8 Q 29,22 56,6 L 56,2 Q 29,0 2,2 Z" fill="rgba(255,255,255,0.45)"/>
+                    <!-- Document lines -->
+                    <line x1="12" y1="22" x2="44" y2="22" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.9"/>
+                    <line x1="12" y1="33" x2="44" y2="33" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.8"/>
+                    <line x1="12" y1="44" x2="34" y2="44" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.7"/>
+                  </g>
+
+                  <!-- Sparkle Flare on top-right of green document -->
+                  <circle cx="115" cy="52" r="9" fill="#ffffff" opacity="0.85"/>
+                  <line x1="101" y1="52" x2="129" y2="52" stroke="#ffffff" stroke-width="1.6"/>
+                  <line x1="115" y1="38" x2="115" y2="66" stroke="#ffffff" stroke-width="1.6"/>
+                </svg>
+              </div>
+
+              <!-- KPI 3: Interviewing -->
+              <div class="kpi-card kpi-orange p-[18px] flex flex-col justify-between">
+                <div class="relative z-10 text-[#132d4e] font-semibold text-[14px] tracking-[-0.01em]">
+                  Interviewing
+                </div>
+                <div id="kpi-interviewing" class="relative z-10 text-[#0b213d] font-extrabold text-[38px] leading-none tracking-tight mb-[6px]">
+                  0
+                </div>
+
+                <!-- Custom 3D Glossy Amber/Orange Sphere Orb SVG -->
+                <svg class="absolute right-0 bottom-0 w-[160px] h-[126px] pointer-events-none" viewBox="0 0 160 126" fill="none">
+                  <defs>
+                    <radialGradient id="amberOrb" cx="35%" cy="30%" r="68%">
+                      <stop offset="0%" stop-color="#fff7ed"/>
+                      <stop offset="22%" stop-color="#fdba74"/>
+                      <stop offset="58%" stop-color="#f97316"/>
+                      <stop offset="88%" stop-color="#c2410c"/>
+                      <stop offset="100%" stop-color="#fb923c"/>
+                    </radialGradient>
+                    <linearGradient id="orbShine" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.88"/>
+                      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+                    </linearGradient>
+                  </defs>
+                  <!-- Curved Glass Swooshes -->
+                  <path d="M 12,126 Q 72,66 160,16 L 160,126 Z" fill="rgba(255,255,255,0.35)"/>
+                  <path d="M 12,126 Q 72,66 160,16" stroke="#ffffff" stroke-width="2" stroke-opacity="0.9"/>
+                  <path d="M 45,126 Q 98,95 160,82" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.75"/>
+
+                  <!-- Outer Glass Ring Halo -->
+                  <circle cx="116" cy="76" r="39" fill="rgba(251,146,60,0.22)" stroke="#ffffff" stroke-width="1.6" stroke-opacity="0.85"/>
+
+                  <!-- 3D Glossy Orange Sphere -->
+                  <circle cx="116" cy="76" r="34" fill="url(#amberOrb)" stroke="#ffedd5" stroke-width="1.2"/>
+                  <!-- Top Specular Oval Reflection -->
+                  <ellipse cx="106" cy="56" rx="18" ry="10" transform="rotate(-18 106 56)" fill="url(#orbShine)"/>
+                  <!-- Bottom Rim Bounce Light -->
+                  <path d="M 92,96 A 30,30 0 0 0 142,92" stroke="#ffedd5" stroke-width="2.5" stroke-linecap="round" opacity="0.75"/>
+
+                  <!-- Starburst Lens Flare on Orb -->
+                  <circle cx="132" cy="82" r="8" fill="#ffffff" opacity="0.9"/>
+                  <line x1="118" y1="82" x2="146" y2="82" stroke="#ffffff" stroke-width="1.6"/>
+                  <line x1="132" y1="68" x2="132" y2="96" stroke="#ffffff" stroke-width="1.6"/>
+                </svg>
+              </div>
+
+              <!-- KPI 4: Avg interview score -->
+              <div class="kpi-card kpi-sky p-[18px] flex flex-col justify-between">
+                <div class="relative z-10 text-[#132d4e] font-semibold text-[14px] tracking-[-0.01em]">
+                  Avg interview score
+                </div>
+                <div id="kpi-avg-score" class="relative z-10 text-[#0b213d] font-extrabold text-[38px] leading-none tracking-tight mb-[6px]">
+                  -
+                </div>
+
+                <!-- Custom 3D Glossy Blue Bar Chart Columns + Wave SVG -->
+                <svg class="absolute right-0 bottom-0 w-[160px] h-[124px] pointer-events-none" viewBox="0 0 160 124" fill="none">
+                  <defs>
+                    <linearGradient id="barBlue1" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#60b5ff"/>
+                      <stop offset="50%" stop-color="#1d72e8"/>
+                      <stop offset="100%" stop-color="#0b4bb8"/>
+                    </linearGradient>
+                    <linearGradient id="barBlue2" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#4da3ff"/>
+                      <stop offset="55%" stop-color="#125fd0"/>
+                      <stop offset="100%" stop-color="#083d9c"/>
+                    </linearGradient>
+                  </defs>
+                  <!-- Glass Wave Ribbon -->
+                  <path d="M 10,124 Q 68,55 160,22 L 160,124 Z" fill="rgba(255,255,255,0.34)"/>
+                  <path d="M 10,124 Q 68,55 160,22" stroke="#ffffff" stroke-width="2.2" stroke-opacity="0.92"/>
+                  <path d="M 28,124 Q 88,78 160,62" stroke="#ffffff" stroke-width="1.4" stroke-opacity="0.7"/>
+
+                  <!-- Small Floating Sphere Dot -->
+                  <circle cx="88" cy="70" r="3.5" fill="#1d72e8" stroke="#ffffff" stroke-width="0.8"/>
+
+                  <!-- Bar 1 (Short) -->
+                  <rect x="81" y="83" width="13" height="22" rx="3.5" fill="url(#barBlue1)" stroke="#ffffff" stroke-width="1"/>
+                  <!-- Bar 2 (Medium) -->
+                  <rect x="100" y="70" width="13" height="35" rx="3.5" fill="url(#barBlue1)" stroke="#ffffff" stroke-width="1"/>
+                  <!-- Bar 3 (Tall) -->
+                  <rect x="119" y="55" width="14" height="50" rx="3.5" fill="url(#barBlue2)" stroke="#ffffff" stroke-width="1"/>
+                </svg>
+              </div>
+
+            </div>
+
+            <!-- MAIN CANDIDATES TABLE AERO CONTAINER -->
+            <div class="aero-double-panel flex-1 min-h-0 flex flex-col">
+              <div class="aero-inner-surface px-[22px] py-[18px] flex flex-col h-full">
+
+                <!-- Filter Tabs & Sort Dropdown Row -->
+                <div class="flex items-center justify-between mb-[24px]">
+                  <!-- Left Filter Tabs -->
+                  <div class="flex items-center gap-[4px]">
+                    <button id="tab-all" onclick="setFilterTab('all')" class="tab-pill-active px-[18px] py-[7px] text-[13.5px] font-bold cursor-pointer">
+                      All (<span id="count-all">1</span>)
+                    </button>
+
+                    <button id="tab-shortlisted" onclick="setFilterTab('shortlisted')" class="px-[16px] py-[7px] text-[#173252] hover:text-[#0b5ed7] text-[13.5px] font-medium cursor-pointer transition">
+                      Shortlisted <span class="font-bold ml-[2px]">(<span id="count-shortlisted">1</span>)</span>
+                    </button>
+
+                    <span class="h-[15px] w-[1px] bg-[#c5d8ec]"></span>
+
+                    <button id="tab-interviewing" onclick="setFilterTab('interviewing')" class="px-[16px] py-[7px] text-[#173252] hover:text-[#0b5ed7] text-[13.5px] font-medium cursor-pointer transition">
+                      Interviewing <span class="font-bold ml-[2px]">(<span id="count-interviewing">0</span>)</span>
+                    </button>
+
+                    <span class="h-[15px] w-[1px] bg-[#c5d8ec]"></span>
+
+                    <button id="tab-evaluated" onclick="setFilterTab('evaluated')" class="px-[16px] py-[7px] text-[#173252] hover:text-[#0b5ed7] text-[13.5px] font-medium cursor-pointer transition">
+                      Evaluated <span class="font-bold ml-[2px]">(<span id="count-evaluated">0</span>)</span>
+                    </button>
+
+                    <span class="h-[15px] w-[1px] bg-[#c5d8ec]"></span>
+
+                    <button id="tab-rejected" onclick="setFilterTab('rejected')" class="px-[16px] py-[7px] text-[#173252] hover:text-[#0b5ed7] text-[13.5px] font-medium cursor-pointer transition">
+                      Rejected <span class="font-bold ml-[2px]">(<span id="count-rejected">0</span>)</span>
+                    </button>
+                  </div>
+
+                  <!-- Right Sort Dropdown -->
+                  <div class="relative">
+                    <select id="sort-select" onchange="renderCandidates()" class="aero-white-btn appearance-none pl-[14px] pr-[36px] py-[7px] text-[#122b49] text-[13px] font-semibold cursor-pointer outline-none">
+                      <option value="newest">Newest first</option>
+                      <option value="oldest">Oldest first</option>
+                      <option value="name">Name (A–Z)</option>
+                    </select>
+                    <svg class="w-[14px] h-[14px] text-[#2c4c70] absolute right-[12px] top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Table Column Headers -->
+                <div class="grid grid-cols-[205px_145px_52px_118px_68px_138px_102px_1fr] items-center px-[12px] mb-[12px] text-[#183354] text-[11px] font-bold tracking-[0.04em] uppercase">
+                  <div>CANDIDATE</div>
+                  <div>ROLE</div>
+                  <div>ATS</div>
+                  <div>INTERVIEW</div>
+                  <div>SCORE</div>
+                  <div>RECOMMENDATION</div>
+                  <div>STATUS</div>
+                  <div class="text-right pr-[10px]">ACTIONS</div>
+                </div>
+
+                <!-- Candidates Rows List -->
+                <div id="candidates-list-container" class="space-y-[10px] overflow-y-auto pr-[2px]">
+                  <!-- Rendered dynamically by JS (starts with exact Leak Test row) -->
+                </div>
+
+                <!-- Subtle Diagonal Bottom-Right Glass Sheen inside Table Surface -->
+                <div class="mt-auto pointer-events-none"></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ==================== 3. RIGHT SIDEBAR COLUMN (384px wide) ==================== -->
+          <div class="w-[384px] flex-shrink-0 flex flex-col gap-[16px] h-full">
+
+            <!-- TOP CARD: Add job description -->
+            <div class="aero-double-panel flex-[1.18] relative">
+              <!-- Top-Right Corner Star Lens Flare -->
+              <svg class="sparkle-flare -top-[14px] right-[26px] w-[36px] h-[36px]" viewBox="0 0 40 40" fill="none">
+                <circle cx="20" cy="20" r="10" fill="#ffffff" opacity="0.85" filter="blur(3px)"/>
+                <path d="M20 0 L22 18 L40 20 L22 22 L20 40 L18 22 L0 20 L18 18 Z" fill="#ffffff"/>
+              </svg>
+
+              <div class="aero-right-surface px-[18px] py-[16px] flex flex-col justify-between">
+
+                <!-- Decorative 3D Glossy Document & Metallic Blue Pen Illustration (Top Right) -->
+                <svg class="absolute top-[6px] right-[6px] w-[118px] h-[118px] pointer-events-none" viewBox="0 0 120 120" fill="none">
+                  <defs>
+                    <linearGradient id="jdPageGrad" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#e8f6ff" stop-opacity="0.95"/>
+                      <stop offset="50%" stop-color="#9ad4ff" stop-opacity="0.82"/>
+                      <stop offset="100%" stop-color="#4da8f7" stop-opacity="0.75"/>
+                    </linearGradient>
+                    <linearGradient id="penBody" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#e2f2ff"/>
+                      <stop offset="30%" stop-color="#2980df"/>
+                      <stop offset="70%" stop-color="#0d418c"/>
+                      <stop offset="100%" stop-color="#7ec4ff"/>
+                    </linearGradient>
+                  </defs>
+                  <!-- Back sheet -->
+                  <g transform="translate(36, 12) rotate(12)">
+                    <rect x="0" y="0" width="62" height="78" rx="8" fill="rgba(180,224,255,0.65)" stroke="#ffffff" stroke-width="1.4"/>
+                  </g>
+                  <!-- Front glossy glass sheet -->
+                  <g transform="translate(24, 14) rotate(9)">
+                    <rect x="0" y="0" width="64" height="80" rx="9" fill="url(#jdPageGrad)" stroke="#ffffff" stroke-width="1.8"/>
+                    <!-- Document text bars -->
+                    <rect x="11" y="14" width="22" height="5" rx="2.5" fill="#3a8ee6" opacity="0.65"/>
+                    <line x1="11" y1="28" x2="50" y2="28" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"/>
+                    <line x1="11" y1="37" x2="48" y2="37" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"/>
+                    <line x1="11" y1="46" x2="44" y2="46" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"/>
+                    <line x1="11" y1="55" x2="36" y2="55" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"/>
+                    <rect x="11" y="63" width="20" height="5" rx="2.5" fill="#3a8ee6" opacity="0.5"/>
+                  </g>
+                  <!-- 3D Glossy Blue & Chrome Pen resting diagonally -->
+                  <g transform="translate(92, 16) rotate(16)">
+                    <!-- Pen barrel -->
+                    <rect x="0" y="0" width="11" height="74" rx="5" fill="url(#penBody)" stroke="#ffffff" stroke-width="0.9"/>
+                    <!-- Pen clip -->
+                    <rect x="9" y="10" width="3" height="24" rx="1.5" fill="#d8ecff"/>
+                    <!-- Chrome center band -->
+                    <rect x="0" y="44" width="11" height="4" fill="#e6f4ff"/>
+                    <!-- Pen cone tip -->
+                    <polygon points="1,73 10,73 5.5,88" fill="#cbd5e1" stroke="#475569" stroke-width="0.6"/>
+                    <circle cx="5.5" cy="88" r="1.3" fill="#0f2942"/>
+                  </g>
+                </svg>
+
+                <!-- Header & Description -->
+                <div class="relative z-10 pr-[78px]">
+                  <h2 class="text-[#0c223f] font-extrabold text-[20px] leading-tight tracking-[-0.02em] mb-[6px]">
+                    Add job description
+                  </h2>
+                  <p class="text-[#193558] text-[12.5px] leading-[1.42] font-medium">
+                    Paste a raw JD (email/WhatsApp text) or upload a JD file. It gets structured, stored as a PDF, and a matching role is created automatically.
+                  </p>
+                </div>
+
+                <!-- Raw JD Textarea -->
+                <div class="aero-input-box relative mt-[8px]">
+                  <textarea
+                    id="jd-textarea"
+                    rows="3"
+                    placeholder="Paste the raw job description here..."
+                    class="w-full h-[82px] px-[12px] py-[10px] bg-transparent border-none outline-none resize-none text-[#122c4c] placeholder-[#5a7898] text-[12.8px] font-medium select-text"
+                  ></textarea>
+                </div>
+
+                <!-- Choose File Row -->
+                <label class="aero-input-box h-[38px] flex items-center overflow-hidden cursor-pointer mt-[6px]">
+                  <input type="file" id="jd-file-input" class="hidden" onchange="updateFileName('jd-file-input', 'jd-file-label')" />
+                  <div class="h-full px-[13px] bg-gradient-to-b from-white to-[#e6f1fc] border-r border-[#bfd6ee] flex items-center gap-[7px] text-[#122c4c] font-semibold text-[12.8px] flex-shrink-0 hover:brightness-98">
+                    <!-- Paperclip Icon -->
+                    <svg class="w-[14px] h-[14px] text-[#355679]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                    </svg>
+                    <span>Choose File</span>
+                  </div>
+                  <span id="jd-file-label" class="px-[12px] text-[#3e5c7c] text-[12.5px] font-medium truncate">
+                    No file chosen
+                  </span>
+                </label>
+
+                <!-- Orange Gel CTA Button -->
+                <button onclick="handleCreateRole()" class="btn-gel-orange w-full h-[42px] mt-[6px] flex items-center justify-center font-bold text-[14px] tracking-[-0.01em] cursor-pointer">
+                  <span class="relative z-10 drop-shadow-[0_1px_2px_rgba(120,30,0,0.6)]">Create role from text</span>
+                </button>
+
+                <!-- Divider & Download a role's JD PDF -->
+                <div class="pt-[8px] mt-[4px] border-t border-[#c7dff4]/80">
+                  <div class="text-[#193558] text-[12.3px] font-medium mb-[6px]">
+                    Download a role's JD PDF:
+                  </div>
+                  <div class="flex items-center gap-[8px]">
+                    <div class="relative flex-1 min-w-0">
+                      <select id="jd-role-select" class="aero-white-btn w-full h-[36px] pl-[12px] pr-[30px] appearance-none text-[#102a49] text-[12.8px] font-semibold truncate outline-none cursor-pointer">
+                        <option>Junior AI Engineer Generative</option>
+                        <option>Junior Front End Developer</option>
+                        <option>Senior Python Developer</option>
+                      </select>
+                      <svg class="w-[14px] h-[14px] text-[#2c4c70] absolute right-[10px] top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"/>
+                      </svg>
+                    </div>
+
+                    <button onclick="downloadRolePDF()" class="aero-white-btn h-[36px] px-[13px] flex items-center gap-[6px] text-[#102a49] font-bold text-[12.8px] cursor-pointer flex-shrink-0">
+                      <svg class="w-[15px] h-[15px] text-[#25476b]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                      </svg>
+                      <span>PDF</span>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- BOTTOM CARD: Screen new CVs -->
+            <div class="aero-double-panel flex-[0.82] relative">
+              <div class="aero-right-surface px-[18px] py-[15px] flex flex-col justify-between">
+
+                <!-- Decorative 3D Glossy Stacked Resume Pages Illustration (Top Right) -->
+                <svg class="absolute top-[6px] right-[8px] w-[108px] h-[98px] pointer-events-none" viewBox="0 0 110 100" fill="none">
+                  <defs>
+                    <linearGradient id="cvSheetGrad" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#eef8ff" stop-opacity="0.95"/>
+                      <stop offset="55%" stop-color="#a6d9ff" stop-opacity="0.85"/>
+                      <stop offset="100%" stop-color="#58b0fa" stop-opacity="0.75"/>
+                    </linearGradient>
+                  </defs>
+                  <!-- Back Sheet -->
+                  <g transform="translate(42, 8) rotate(14)">
+                    <rect x="0" y="0" width="54" height="68" rx="7" fill="rgba(175,220,255,0.65)" stroke="#ffffff" stroke-width="1.4"/>
+                  </g>
+                  <!-- Middle Sheet -->
+                  <g transform="translate(34, 10) rotate(11)">
+                    <rect x="0" y="0" width="54" height="68" rx="7" fill="rgba(205,236,255,0.75)" stroke="#ffffff" stroke-width="1.4"/>
+                  </g>
+                  <!-- Front Glossy Sheet -->
+                  <g transform="translate(24, 12) rotate(9)">
+                    <rect x="0" y="0" width="56" height="70" rx="8" fill="url(#cvSheetGrad)" stroke="#ffffff" stroke-width="1.8"/>
+                    <line x1="10" y1="16" x2="36" y2="16" stroke="#4ba3f5" stroke-width="3" stroke-linecap="round" opacity="0.75"/>
+                    <line x1="10" y1="26" x2="44" y2="26" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>
+                    <line x1="10" y1="35" x2="44" y2="35" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>
+                    <line x1="10" y1="44" x2="38" y2="44" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>
+                  </g>
+                </svg>
+
+                <!-- Header & Description -->
+                <div class="relative z-10 pr-[74px]">
+                  <h2 class="text-[#0c223f] font-extrabold text-[20px] leading-tight tracking-[-0.02em] mb-[5px]">
+                    Screen new CVs
+                  </h2>
+                  <p class="text-[#193558] text-[12.5px] leading-[1.4] font-medium">
+                    Upload one or more PDF resumes. They are screened one by one; shortlisted candidates get an interview link automatically.
+                  </p>
+                </div>
+
+                <!-- Role Dropdown -->
+                <div class="relative mt-[6px]">
+                  <select id="cv-role-select" class="aero-white-btn w-full h-[38px] pl-[13px] pr-[34px] appearance-none text-[#102a49] text-[13px] font-semibold outline-none cursor-pointer">
+                    <option value="Junior AI Engineer Generative">Junior AI Engineer Generative</option>
+                    <option value="junior front end developer">Junior Front End Developer</option>
+                    <option value="Senior Python Developer">Senior Python Developer</option>
+                  </select>
+                  <svg class="w-[15px] h-[15px] text-[#2c4c70] absolute right-[12px] top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </div>
+
+                <!-- Choose Files Row -->
+                <label class="aero-input-box h-[38px] flex items-center overflow-hidden cursor-pointer mt-[6px]">
+                  <input type="file" id="cv-file-input" multiple accept=".pdf,.doc,.docx" class="hidden" onchange="updateFileName('cv-file-input', 'cv-file-label')" />
+                  <div class="h-full px-[13px] bg-gradient-to-b from-white to-[#e6f1fc] border-r border-[#bfd6ee] flex items-center gap-[7px] text-[#122c4c] font-semibold text-[12.8px] flex-shrink-0">
+                    <svg class="w-[14px] h-[14px] text-[#355679]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                    </svg>
+                    <span>Choose Files</span>
+                  </div>
+                  <span id="cv-file-label" class="px-[12px] text-[#3e5c7c] text-[12.5px] font-medium truncate">
+                    No file chosen
+                  </span>
+                </label>
+
+                <!-- Blue Gel CTA Button -->
+                <button onclick="handleUploadAndScreen()" class="btn-gel-blue w-full h-[42px] mt-[6px] flex items-center justify-center gap-[8px] font-bold text-[14px] tracking-[-0.01em] cursor-pointer">
+                  <svg class="w-[16px] h-[16px] text-white relative z-10 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <span class="relative z-10 drop-shadow-[0_1px_2px_rgba(0,40,100,0.6)]">Upload &amp; screen</span>
+                </button>
+
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div id="route-host" class="route-host"></div>
+    <!-- Floating Glossy Notification Toast (Hidden by default) -->
+    <div id="aero-toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-6 opacity-0 pointer-events-none z-50 px-5 py-2.5 rounded-full bg-gradient-to-b from-[#1e68c8]/95 to-[#0c3c82]/95 text-white text-[13.5px] font-semibold border border-white/80 shadow-[0_8px_24px_rgba(8,40,90,0.45)] flex items-center gap-2.5 backdrop-blur-md">
+      <span class="w-2.5 h-2.5 rounded-full bg-[#4ade80] shadow-[0_0_8px_#4ade80]"></span>
+      <span id="aero-toast-text">Action completed</span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  /* ================= PROPORTIONAL STAGE SCALER ================= */
+  function fitStageToScreen() {
+    const stage = document.getElementById('dashboard-stage');
+    if (!stage) return;
+    const scaleX = window.innerWidth / 1600;
+    const scaleY = window.innerHeight / 900;
+    const scale = Math.min(scaleX, scaleY);
+    stage.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', fitStageToScreen);
+  window.addEventListener('DOMContentLoaded', () => {
+    fitStageToScreen();
+    renderCandidates();
+  });
+
+  /* ================= STATE & INITIAL EXACT DATA ================= */
+  let activeTab = 'all';
+  let searchQuery = '';
+
+  let candidates = [
+    {
+      id: 'cand-1',
+      initials: 'LT',
+      name: 'Leak Test',
+      email: 'leaktest@example.com',
+      roleLine1: 'junior front end',
+      roleLine2: 'developer',
+      roleSub: 'react js',
+      ats: '-',
+      interview: 'not started',
+      score: '-',
+      recommendation: '-',
+      status: 'shortlisted',
+      createdAt: 1
+    }
+  ];
+
+  /* ================= RENDER CANDIDATES TABLE ================= */
+  function renderCandidates() {
+    const container = document.getElementById('candidates-list-container');
+    const sortMode = document.getElementById('sort-select').value;
+
+    // Update counts
+    const totalCount = candidates.length;
+    const shortlistedCount = candidates.filter(c => c.status === 'shortlisted').length;
+    const interviewingCount = candidates.filter(c => c.status === 'interviewing').length;
+    const evaluatedCount = candidates.filter(c => c.status === 'evaluated').length;
+    const rejectedCount = candidates.filter(c => c.status === 'rejected').length;
+
+    document.getElementById('kpi-total').textContent = totalCount;
+    document.getElementById('kpi-shortlisted').textContent = shortlistedCount;
+    document.getElementById('kpi-interviewing').textContent = interviewingCount;
+    document.getElementById('sidebar-cand-badge').textContent = totalCount;
+
+    document.getElementById('count-all').textContent = totalCount;
+    document.getElementById('count-shortlisted').textContent = shortlistedCount;
+    document.getElementById('count-interviewing').textContent = interviewingCount;
+    document.getElementById('count-evaluated').textContent = evaluatedCount;
+    document.getElementById('count-rejected').textContent = rejectedCount;
+
+    let filtered = candidates.filter(c => {
+      if (activeTab !== 'all' && c.status !== activeTab) return false;
+      if (searchQuery.trim() !== '') {
+        const q = searchQuery.toLowerCase();
+        const matchName = c.name.toLowerCase().includes(q);
+        const matchEmail = c.email.toLowerCase().includes(q);
+        const matchRole = `${c.roleLine1} ${c.roleLine2} ${c.roleSub}`.toLowerCase().includes(q);
+        return matchName || matchEmail || matchRole;
+      }
+      return true;
+    });
+
+    if (sortMode === 'newest') {
+      filtered.sort((a, b) => b.createdAt - a.createdAt);
+    } else if (sortMode === 'oldest') {
+      filtered.sort((a, b) => a.createdAt - b.createdAt);
+    } else if (sortMode === 'name') {
+      filtered.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="candidate-row-strip h-[74px] px-[16px] flex items-center justify-center text-[#526f8e] text-[13.5px] font-medium">
+          No matching candidates in this view.
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = filtered.map(c => `
+      <div onclick="location.hash='#/admin/candidate/${c.id}'" class="candidate-row-strip cursor-pointer h-[76px] px-[12px] grid grid-cols-[205px_145px_52px_118px_68px_138px_102px_1fr] items-center">
+        <!-- CANDIDATE -->
+        <div class="flex items-center gap-[11px] min-w-0 pr-[8px]">
+          <div class="w-[38px] h-[38px] rounded-full bg-[#dce7f3] border border-[#c8daec] flex items-center justify-center text-[#2c435e] font-bold text-[13.5px] flex-shrink-0">
+            ${c.initials}
+          </div>
+          <div class="min-w-0">
+            <div class="text-[#0c223f] font-bold text-[13.8px] leading-tight truncate">${c.name}</div>
+            <div class="text-[#516b87] text-[11.8px] font-medium truncate mt-[2px]">${c.email}</div>
+          </div>
+        </div>
+
+        <!-- ROLE -->
+        <div class="pr-[6px] leading-[1.22]">
+          <div class="text-[#0e2645] font-semibold text-[12.8px]">${c.roleLine1}</div>
+          <div class="text-[#0e2645] font-semibold text-[12.8px]">${c.roleLine2}</div>
+          <div class="text-[#496582] text-[12px] font-medium mt-[1px]">${c.roleSub}</div>
+        </div>
+
+        <!-- ATS -->
+        <div class="text-[#2c4766] font-semibold text-[13.5px]">
+          ${c.ats}
+        </div>
+
+        <!-- INTERVIEW -->
+        <div>
+          <span class="inline-flex items-center px-[11px] py-[4.5px] rounded-[7px] bg-[#dce3ec] text-[#1e2e42] font-bold text-[12px] leading-none">
+            ${c.interview}
+          </span>
+        </div>
+
+        <!-- SCORE -->
+        <div class="text-[#2c4766] font-semibold text-[13.5px] pl-[4px]">
+          ${c.score}
+        </div>
+
+        <!-- RECOMMENDATION -->
+        <div class="text-[#2c4766] font-semibold text-[13.5px] pl-[4px]">
+          ${c.recommendation}
+        </div>
+
+        <!-- STATUS -->
+        <div>
+          <span class="inline-flex items-center px-[11px] py-[4.5px] rounded-[7px] bg-[#d6e9ff] text-[#1864d8] font-bold text-[12px] leading-none">
+            ${c.status}
+          </span>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="flex items-center justify-end gap-[7px]">
+          <button onclick="event.stopPropagation();copyCandidateLink('${c.email}')" class="aero-white-btn h-[32px] px-[11px] flex items-center gap-[6px] text-[#122b49] font-bold text-[12px] cursor-pointer">
+            <!-- Link Icon -->
+            <svg class="w-[13.5px] h-[13.5px] text-[#28486c]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+            <span>Copy link</span>
+          </button>
+
+          <button onclick="event.stopPropagation();deleteCandidate('${c.id}')" title="Delete candidate" class="w-[32px] h-[32px] rounded-[8px] bg-[#ffe4e8] hover:bg-[#fecdd3] border border-[#fda4af] flex items-center justify-center text-[#e11d48] transition cursor-pointer">
+            <!-- Trash Icon -->
+            <svg class="w-[14.5px] h-[14.5px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              <line x1="10" y1="11" x2="10" y2="17"/>
+              <line x1="14" y1="11" x2="14" y2="17"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /* ================= INTERACTIVE HANDLERS ================= */
+  function setFilterTab(tab) {
+    activeTab = tab;
+    const tabs = ['all', 'shortlisted', 'interviewing', 'evaluated', 'rejected'];
+    tabs.forEach(t => {
+      const btn = document.getElementById(`tab-${t}`);
+      if (t === tab) {
+        btn.className = 'tab-pill-active px-[18px] py-[7px] text-[13.5px] font-bold cursor-pointer';
+      } else {
+        btn.className = 'px-[16px] py-[7px] text-[#173252] hover:text-[#0b5ed7] text-[13.5px] font-medium cursor-pointer transition';
+      }
+    });
+    renderCandidates();
+  }
+
+  function handleSearch(val) {
+    searchQuery = val;
+    renderCandidates();
+  }
+
+  function filterByRole(roleName) {
+    const searchInput = document.getElementById('search-input');
+    if (searchQuery.toLowerCase() === roleName.toLowerCase()) {
+      searchQuery = '';
+      searchInput.value = '';
+      showToast('Cleared role filter');
+    } else {
+      searchQuery = roleName;
+      searchInput.value = roleName;
+      showToast(`Filtered by role: ${roleName}`);
+    }
+    renderCandidates();
+  }
+
+  function switchSidebarNav(section) {
+    showToast(`Viewing ${section.charAt(0).toUpperCase() + section.slice(1)} workspace`);
+  }
+
+  function copyCandidateLink(email) {
+    const link = `${location.origin}${location.pathname}#/interview/${encodeURIComponent(email)}`;
+    const temp = document.createElement('textarea');
+    temp.value = link;
+    document.body.appendChild(temp);
+    temp.select();
+    document.execCommand('copy');
+    document.body.removeChild(temp);
+    showToast(`Interview link copied for ${email}`);
+  }
+
+  function deleteCandidate(id) {
+    candidates = candidates.filter(c => c.id !== id);
+    renderCandidates();
+    showToast('Candidate removed');
+  }
+
+  function updateFileName(inputId, labelId) {
+    const input = document.getElementById(inputId);
+    const label = document.getElementById(labelId);
+    if (input.files && input.files.length > 0) {
+      if (input.files.length === 1) {
+        label.textContent = input.files[0].name;
+      } else {
+        label.textContent = `${input.files.length} files selected`;
+      }
+    } else {
+      label.textContent = 'No file chosen';
+    }
+  }
+
+  function handleCreateRole() {
+    const text = document.getElementById('jd-textarea').value.trim();
+    const fileLabel = document.getElementById('jd-file-label').textContent;
+    if (!text && fileLabel === 'No file chosen') {
+      showToast('Paste a job description or choose a JD file first');
+      return;
+    }
+    const roleTitle = text ? text.split('\n')[0].slice(0, 28) : fileLabel.replace(/\.[^/.]+$/, '');
+    const jdSelect = document.getElementById('jd-role-select');
+    const cvSelect = document.getElementById('cv-role-select');
+
+    const opt1 = document.createElement('option');
+    opt1.textContent = roleTitle;
+    jdSelect.prepend(opt1);
+    jdSelect.selectedIndex = 0;
+
+    const opt2 = document.createElement('option');
+    opt2.textContent = roleTitle;
+    opt2.value = roleTitle;
+    cvSelect.prepend(opt2);
+    cvSelect.selectedIndex = 0;
+
+    document.getElementById('jd-textarea').value = '';
+    document.getElementById('jd-file-label').textContent = 'No file chosen';
+    showToast(`Created structured role: "${roleTitle}"`);
+  }
+
+  function downloadRolePDF() {
+    const role = document.getElementById('jd-role-select').value;
+    showToast(`Downloading "${role}.pdf"...`);
+  }
+
+  function handleUploadAndScreen() {
+    const fileInput = document.getElementById('cv-file-input');
+    const role = document.getElementById('cv-role-select').value;
+    let name = 'Alex Rivera';
+    let email = 'alex.rivera@example.com';
+
+    if (fileInput.files && fileInput.files.length > 0) {
+      const rawName = fileInput.files[0].name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+      name = rawName.replace(/\b\w/g, l => l.toUpperCase());
+      email = `${rawName.toLowerCase().replace(/\s+/g, '.')}@example.com`;
+    }
+
+    const parts = name.trim().split(' ');
+    const initials = (parts[0][0] + (parts[1] ? parts[1][0] : 'X')).toUpperCase();
+
+    candidates.unshift({
+      id: 'cand-' + Date.now(),
+      initials,
+      name,
+      email,
+      roleLine1: role.toLowerCase().slice(0, 16),
+      roleLine2: role.toLowerCase().slice(16, 30) || 'engineer',
+      roleSub: 'ai / llm',
+      ats: '84',
+      interview: 'not started',
+      score: '-',
+      recommendation: '-',
+      status: 'shortlisted',
+      createdAt: Date.now()
+    });
+
+    document.getElementById('cv-file-label').textContent = 'No file chosen';
+    fileInput.value = '';
+    renderCandidates();
+    showToast(`Screened & shortlisted ${name} (ATS: 84)`);
+  }
+
+  let toastTimeout;
+  function showToast(msg) {
+    const toast = document.getElementById('aero-toast');
+    const text = document.getElementById('aero-toast-text');
+    text.textContent = msg;
+    toast.classList.remove('opacity-0', 'translate-y-6');
+    toast.classList.add('opacity-100', 'translate-y-0');
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+      toast.classList.remove('opacity-100', 'translate-y-0');
+      toast.classList.add('opacity-0', 'translate-y-6');
+    }, 2400);
+  }
+</script>
+<script>
+(() => {
+ const host=document.getElementById('route-host'),dashboard=document.getElementById('dashboard-app');
+ const demo={question:0,recorded:false,recording:false,seconds:2700,timer:null};
+ const path=()=>decodeURIComponent(location.hash.slice(1)||'/'); const go=p=>location.hash='#'+p;
+ const badge=(t,k='')=>`<span class="aero-mini-pill ${k}">${t}</span>`;
+ function brand(){return `<a class="route-brand" href="#/"><span class="logo-h-box"><b class="relative z-10">C</b></span>ChiefTalent</a>`}
+ function side(active='Candidates'){return `<aside class="sidebar-shell route-sidebar"><div><div class="brand-capsule h-[70px] px-[14px] flex items-center mb-[20px]">${brand()}</div><div class="px-[6px]"><div class="text-[#b8d9f8] text-[12px] mb-[8px] pl-[6px]">Workspace</div><a href="#/admin" class="${active==='Candidates'?'nav-item-active':'nav-item-inactive'} route-nav">▦ &nbsp; Candidates <span class="ml-auto">24</span></a><a href="#/admin" class="nav-item-inactive route-nav">◷ &nbsp; Analytics</a><a href="#/admin" class="nav-item-inactive route-nav">⚙ &nbsp; Settings</a></div><div class="px-[6px] mt-[20px]"><div class="text-[#b8d9f8] text-[12px] mb-[8px] pl-[6px]">Roles</div><div class="nav-item-inactive route-nav">▱ &nbsp; Business Analyst</div><div class="nav-item-inactive route-nav">▱ &nbsp; Product Analyst</div></div></div><div class="space-y-[9px]"><div class="sidebar-bottom-card px-[12px] py-[10px]"><div class="text-white font-bold text-[12px]">● API connected</div><div class="text-[#b8d8f0] text-[10px] mt-1">SCREENING API · READY</div></div><div class="sidebar-bottom-card px-[12px] py-[10px] flex items-center gap-2"><div class="rounded-full w-9 h-9 bg-gradient-to-b from-[#4f749c] to-[#2e4d70] border border-white/50 grid place-items-center text-white font-bold">Y</div><div class="text-white"><b class="text-[12px]">Yash</b><div class="text-[10px] text-[#c0dcf2]">ADMIN</div></div><a class="ml-auto text-white" href="#/login">↗</a></div></div></aside>`}
+ function frame(title,sub,body){return `<div class="route-frame">${side()}<main class="route-main"><header class="route-head"><div><div class="route-eyebrow">Workspace / Candidates</div><h1 class="route-title">${title}</h1><p class="route-subtitle">${sub}</p></div><a class="btn-gel-blue h-[38px] px-[15px] flex items-center gap-2 text-white font-bold text-[12px]" href="#/admin">Open dashboard ↗</a></header><div class="route-scroll">${body}</div></main></div>`}
+ function publicFrame(content){return `<div class="h-full w-full relative z-10 px-[30px] py-[24px] flex flex-col"><header class="brand-capsule h-[68px] px-[18px] flex items-center justify-between">${brand()}<nav class="flex items-center gap-5 text-white font-semibold text-[12px]"><a href="#/#workflow">How it works</a><a href="#/terms">Terms</a><a href="#/privacy">Privacy</a><a class="btn-gel-orange px-5 py-2" href="#/login">Sign in →</a></nav></header>${content}</div>`}
+ function landing(){return publicFrame(`<main class="flex-1 grid grid-cols-[1fr_.9fr] items-center gap-8 px-[8%]"><section><span class="route-eyebrow">Structured hiring · Human decisions</span><h1 class="text-white text-[54px] leading-[1.04] font-extrabold tracking-[-.05em] mt-4 drop-shadow-[0_4px_12px_rgba(8,48,99,.32)]">Better interviews.<br/><span class="text-[#fff0d1]">Clearer decisions.</span></h1><p class="text-white/95 text-[16px] leading-7 max-w-[520px] mt-5 drop-shadow">ChiefTalent brings resume screening, timed video interviews, and candidate review together in one workspace.</p><div class="flex gap-3 mt-7"><a class="btn-gel-orange px-6 py-3 text-white font-bold" href="#/login">Open hiring workspace →</a><a class="aero-white-btn px-5 py-3 font-bold text-[#123454]" href="#/admin">Preview dashboard</a></div><div id="workflow" class="flex gap-2 mt-8">${badge('Resume screening')}${badge('Timed video interviews')}${badge('Human review')}</div></section><section class="aero-double-panel p-[14px] rotate-[1deg]"><div class="aero-inner-surface p-[20px]"><div class="flex justify-between items-center"><b class="text-[#0c223f] text-[16px]">Hiring overview</b>${badge('● Live','green')}</div><div class="grid grid-cols-3 gap-3 mt-5"><div class="kpi-card kpi-blue p-4"><small class="text-[#4b6784]">Candidates</small><strong class="block text-[27px] text-[#0c223f]">24</strong></div><div class="kpi-card kpi-green p-4"><small class="text-[#4b6784]">Interviews</small><strong class="block text-[27px] text-[#0c223f]">08</strong></div><div class="kpi-card kpi-orange p-4"><small class="text-[#4b6784]">Roles</small><strong class="block text-[27px] text-[#0c223f]">03</strong></div></div><div class="mt-4 p-4 rounded-xl bg-white/75"><div class="font-bold text-[#0c223f]">Aarav Mehta</div><div class="text-[12px] text-[#526b88] mt-1">Business Analyst · Interview complete</div><div class="mt-3 h-2 rounded-full bg-[#dce9f6]"><div class="h-full w-[84%] rounded-full bg-gradient-to-r from-[#54c9e0] to-[#3280e8]"></div></div></div></div></section></main><footer class="text-white/90 flex justify-between text-[11px] px-2"><span>© ChiefTalent · DotStark Technologies</span><span>A human stays in every hiring decision.</span></footer>`)}
+ function login(){return publicFrame(`<main class="flex-1 grid place-items-center"><section class="aero-double-panel w-[450px] p-[13px]"><div class="aero-inner-surface p-[28px]"><div class="text-center"><div class="brand-capsule p-2 inline-flex">${brand()}</div><div class="route-eyebrow mt-5">Hiring team access</div><h1 class="text-[#0c223f] text-[27px] font-extrabold mt-2">Welcome back</h1><p class="text-[#526b88] text-[12px] mt-2">Sign in to your candidate workspace.</p></div><form class="mt-6 grid gap-4" onsubmit="event.preventDefault();go('/admin')"><div><label>Work email</label><input class="field" type="email" placeholder="you@company.com" required></div><div><label>Password</label><input class="field" type="password" placeholder="Your password" required></div><button class="btn-gel-blue py-3 text-white font-bold">Sign in →</button></form><p class="text-center text-[10px] text-[#526b88] mt-4">Prototype only · no credentials are sent.</p></div></section></main>`)}
+ function legal(kind){return publicFrame(`<main class="flex-1 grid place-items-center"><article class="aero-double-panel w-[850px] max-h-[690px] p-[14px]"><div class="aero-inner-surface p-[28px] h-full overflow-auto"><a href="#/" class="text-[#1764ba] text-[12px] font-bold">← Back home</a><div class="route-eyebrow mt-5">ChiefTalent · ${kind}</div><h1 class="text-[#0c223f] text-[32px] font-extrabold mt-2">${kind==='terms'?'Terms of use':'Privacy'}</h1><p class="text-[#526b88] text-[13px] leading-6 mt-4">This concept route mirrors the public policy page in the current app. The production policy text should replace this sample copy.</p><h2 class="text-[#0c223f] text-[16px] font-bold mt-6">Hiring and candidate information</h2><p class="text-[#526b88] text-[12px] leading-6 mt-2">ChiefTalent supports resume review, interview coordination, and human evaluation. Candidate information is used for recruitment and made available to authorized hiring staff.</p><h2 class="text-[#0c223f] text-[16px] font-bold mt-5">Human review</h2><p class="text-[#526b88] text-[12px] leading-6 mt-2">Automated assessments are decision support. Hiring teams review candidate evidence and make the final decision.</p></div></article></main>`)}
+ function detail(path){return frame('Candidate profile','Resume, interview progress, and recorded answers.',`<div class="grid grid-cols-[1.05fr_.95fr] gap-4"><section class="route-panel p-[18px]"><div class="flex items-center gap-4"><div class="w-[58px] h-[58px] rounded-full bg-gradient-to-br from-[#e5f4ff] to-[#9ec8ed] border-2 border-white grid place-items-center font-extrabold text-[#285781] text-[18px]">AM</div><div><span class="route-eyebrow">Candidate · ${path.split('/').pop()}</span><h2 class="text-[#0c223f] text-[20px] font-extrabold mt-1">Aarav Mehta</h2><p class="text-[#526b88] text-[12px]">aarav.mehta@example.com · Bengaluru</p></div>${badge('Review required','orange')}</div><div class="grid grid-cols-2 gap-3 mt-5">${[['Role','Business Analyst'],['Experience','4.5 years'],['Resume match','88 / 100'],['Interview','Completed']].map(([a,b])=>`<div class="route-card p-3"><small class="text-[#526b88]">${a}</small><div class="text-[#0c223f] font-bold text-[13px] mt-1">${b}</div></div>`).join('')}</div><div class="route-card p-4 mt-4"><b class="text-[#0c223f]">Resume notes</b><p class="text-[#526b88] text-[12px] leading-5 mt-2">SQL and Power BI experience across retail reporting projects. Interview prompts reference the resume and role requirements.</p></div><div class="flex gap-2 mt-4"><button class="btn-gel-blue px-4 py-2 text-white font-bold text-[12px]" onclick="showToast('Candidate status updated in this prototype')">Shortlist candidate</button><button class="aero-white-btn px-4 py-2 text-[#123454] font-bold text-[12px]" onclick="showToast('Reviewer note saved in this prototype')">Add reviewer note</button></div></section><section class="route-panel p-[16px]"><div class="flex justify-between items-center"><div><div class="route-eyebrow">Interview evidence</div><h3 class="text-[#0c223f] font-extrabold text-[17px] mt-1">Question 1 recording</h3></div>${badge('Saved','green')}</div><div class="candidate-video mt-3"><span class="absolute z-10 top-3 left-3 rounded-full bg-[#12395f]/85 px-3 py-1 text-white text-[10px] font-bold">▶ VIDEO PREVIEW</span><span class="absolute z-10 bottom-3 left-3 text-white text-[11px] font-bold">02:48 · Resume-based question</span></div><div class="flex gap-2 mt-3"><button class="btn-gel-blue px-4 py-2 text-white font-bold text-[12px]" onclick="showToast('Prototype recording preview')">▶ Play recording</button><button class="aero-white-btn px-4 py-2 text-[#123454] font-bold text-[12px]" onclick="showToast('Prototype video download')">↓ Download video</button></div><div class="route-card p-3 mt-3"><div class="flex justify-between text-[11px] text-[#526b88]"><span>AI summary · advisory</span><b class="text-[#0c223f]">Score 8.1 / 10</b></div><p class="text-[#526b88] text-[11px] leading-5 mt-2">Structured response; reviewer makes the final assessment.</p></div></section></div>`)}
+ function candidatePortal(token,phase,body){const labels=['Email','Your details','Guidelines','Interview'];const current=phase==='done'?4:['verify','details','guidelines','interview'].indexOf(phase);const progress=`<div class="candidate-progress">${labels.map((label,i)=>`<div class="candidate-progress-step ${i<current?'done':i===current?'active':''}">${i+1} · ${label}</div>`).join('')}</div>`;return `<div class="candidate-portal relative z-10 h-full w-full flex flex-col px-[22px] py-[16px]"><header class="brand-capsule candidate-top flex items-center justify-between"><div class="candidate-mark"><div class="route-brand"><span class="logo-h-box w-[38px] h-[38px] grid place-items-center"><b class="relative z-10">C</b></span>ChiefTalent</div><span class="text-white/70 text-[11px]">Candidate interview</span></div><div class="candidate-privacy">🔒 &nbsp; PRIVATE SESSION</div></header><main class="flex-1 min-h-0 grid place-items-center py-3"><section class="aero-double-panel candidate-stage p-[12px]"><div class="aero-inner-surface candidate-portal-card">${progress}${body}</div></section></main><footer class="candidate-footer">ChiefTalent · Your responses are shared only with the hiring team for review.</footer></div>`}
+ function interview(path){const token=path.split('/')[2]||'demo';if(path.endsWith('/done')){if(demo.timer){clearInterval(demo.timer);demo.timer=null}return candidatePortal(token,'done',`<div class="text-center py-5"><div class="logo-h-box w-[58px] h-[58px] mx-auto grid place-items-center text-white text-[24px] font-extrabold">✓</div><div class="route-eyebrow mt-5">Interview submitted</div><h1 class="text-[#0c223f] text-[30px] font-extrabold mt-2">Thank you, Aarav.</h1><p class="text-[#526b88] text-[13px] leading-6 mt-3 max-w-[520px] mx-auto">Your responses and video answers have been submitted. The hiring team will review your interview and follow up about next steps.</p><div class="route-card max-w-[500px] mx-auto p-4 mt-5 text-left"><div class="flex justify-between text-[11px] text-[#526b88]"><span>Interview</span><b class="text-[#20714d]">Complete</b></div><div class="mt-2 h-2 rounded-full bg-[#dce9f6]"><div class="h-full w-full rounded-full bg-gradient-to-r from-[#59cfa1] to-[#198363]"></div></div></div><p class="text-[#637d96] text-[10px] mt-5">You may close this window.</p></div>`)}const phase=localStorage.getItem('ct-argon-phase-'+token)||'verify';const questions=[{source:'Resume · Retail Sales Dashboard',text:'Your resume mentions SQL in your Retail Sales Dashboard project. How did you prevent duplicate orders when joining line-item data?'},{source:'Role · Data quality',text:'This role asks you to reconcile reports from multiple systems. How would you investigate a mismatch between the totals?'},{source:'Resume · Power BI',text:'You list Power BI in your resume. Describe a measure you built and explain how you checked that it gave the right result.'}];const q=questions[demo.question%questions.length];let body='';if(phase==='verify')body=`<div class="route-eyebrow">Secure interview link</div><h1 class="text-[#0c223f] text-[25px] font-extrabold mt-2">Verify your email</h1><p class="text-[#526b88] text-[12px] leading-5 mt-2">Enter the six-digit code sent to the email address on your application. This helps keep your interview link private.</p><div class="mt-5"><label for="verifyCode">Verification code</label><input id="verifyCode" class="field text-center tracking-[.45em] text-[19px]" maxlength="6" inputmode="numeric" placeholder="••••••"></div><button class="btn-gel-blue w-full mt-4 py-3 text-white font-bold" onclick="setInterviewPhase('${token}','details')">Verify and continue →</button><p class="text-center text-[10px] text-[#6a829c] mt-3">Need a new code? <button class="text-[#1764ba] font-bold" onclick="showToast('A new code was requested in this preview')">Resend code</button></p>`;if(phase==='details')body=`<div class="route-eyebrow">Step 1 · Candidate details</div><h1 class="text-[#0c223f] text-[25px] font-extrabold mt-2">A little about you</h1><p class="text-[#526b88] text-[12px] mt-2">Confirm the details the hiring team will use for your application.</p><div class="grid grid-cols-2 gap-3 mt-4">${[['First name','Aarav'],['Last name','Mehta'],['Current city','Bengaluru'],['Experience','4.5 years'],['Current company','Northstar Retail'],['Notice period','30 days']].map(([a,b])=>`<div><label>${a}</label><input class="field" placeholder="${b}"></div>`).join('')}<div class="col-span-2"><label>Skills and experience</label><textarea class="field h-[70px]" placeholder="Share relevant context from your work…"></textarea></div></div><button class="btn-gel-blue w-full mt-4 py-3 text-white font-bold" onclick="setInterviewPhase('${token}','guidelines')">Save details →</button>`;if(phase==='guidelines')body=`<div class="route-eyebrow">Step 2 · Before you begin</div><h1 class="text-[#0c223f] text-[25px] font-extrabold mt-2">Interview guidelines</h1><p class="text-[#526b88] text-[12px] mt-2">A few things to help the session go smoothly.</p><div class="route-card p-4 mt-4 text-[#526b88] text-[12px] leading-7"><div>• Find a quiet space with a stable internet connection.</div><div>• Allow camera and microphone access when prompted.</div><div>• Questions are timed; spoken answers are recorded for review.</div><div>• You can take a moment to think before starting each answer.</div></div><label class="flex items-center gap-2 mt-4"><input id="guidelineAgree" type="checkbox"> I’ve read and understood these guidelines.</label><button class="btn-gel-blue w-full mt-4 py-3 text-white font-bold" onclick="if(document.getElementById('guidelineAgree').checked)setInterviewPhase('${token}','interview');else showToast('Please confirm the guidelines first')">Continue to camera check →</button>`;if(phase==='interview')body=`<div class="flex justify-between items-center"><div><div class="route-eyebrow">Question ${demo.question+1} of 20</div><span class="text-[10px] text-[#6a829c]">${q.source}</span></div><span id="candidateTimer" class="aero-mini-pill orange">${Math.floor(demo.seconds/60)}:${String(demo.seconds%60).padStart(2,'0')}</span></div><h1 class="text-[#0c223f] text-[19px] leading-7 font-extrabold mt-3">${q.text}</h1><div class="candidate-camera-scene mt-4"><div class="candidate-camera-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/></svg><strong>Camera preview</strong><span>Camera and microphone preview appear here</span></div><span class="absolute z-10 top-3 left-3 candidate-record-dot ${demo.recording?'is-recording':''}"><i></i>${demo.recording?'RECORDING · 00:18':demo.recorded?'ANSWER SAVED':'CAMERA READY'}</span></div><div class="flex justify-between items-center gap-3 mt-4"><span class="text-[10px] text-[#526b88]">Your video response is saved for the hiring team.</span><button class="${demo.recording?'btn-gel-orange':'btn-gel-blue'} px-4 py-2 text-white font-bold text-[11px]" onclick="toggleDemoRecording()">${demo.recorded?'↻ Retake answer':demo.recording?'■ Stop & save':'● Start recording'}</button></div><button class="btn-gel-blue w-full mt-3 py-3 text-white font-bold" onclick="nextDemoQuestion('${token}')">${demo.question>=19?'Finish interview':'Save answer & continue →'}</button>`;const result=candidatePortal(token,phase,body);if(phase==='interview')startCandidateTimer(token);return result}
+ function startCandidateTimer(token){if(demo.timer)return;demo.timer=setInterval(()=>{const current=localStorage.getItem('ct-argon-phase-'+token);if(current!=='interview'){clearInterval(demo.timer);demo.timer=null;return}demo.seconds=Math.max(0,demo.seconds-1);const timer=document.getElementById('candidateTimer');if(timer)timer.textContent=`${Math.floor(demo.seconds/60)}:${String(demo.seconds%60).padStart(2,'0')}`;if(demo.seconds===0){clearInterval(demo.timer);demo.timer=null;go('/interview/'+token+'/done')}},1000)} function setInterviewPhase(token,phase){localStorage.setItem('ct-argon-phase-'+token,phase);if(phase==='interview'){demo.seconds=2700;demo.question=0;demo.recorded=false;demo.recording=false;if(demo.timer){clearInterval(demo.timer);demo.timer=null}}renderRoute()}
+ function toggleDemoRecording(){if(demo.recording){demo.recording=false;demo.recorded=true}else{demo.recording=true;demo.recorded=false}renderRoute()}
+ function nextDemoQuestion(token){if(!demo.recorded){showToast('Record your answer before continuing');return}if(demo.question>=19){go('/interview/'+token+'/done');return}demo.question++;demo.recorded=false;renderRoute()}
+ function renderRoute(){const p=path(),candidatePage=p.startsWith('/interview/');document.getElementById('dashboard-stage').classList.toggle('candidate-mode',candidatePage);document.getElementById('viewport-wrapper').classList.toggle('candidate-mode',candidatePage);if(p==='/admin'||p==='/admin/'){dashboard.style.display='flex';host.style.display='none';return}dashboard.style.display='none';host.style.display='block';if(p==='/')host.innerHTML=landing();else if(p==='/login')host.innerHTML=login();else if(p==='/terms'||p==='/privacy')host.innerHTML=legal(p.slice(1));else if(p.startsWith('/admin/candidate/'))host.innerHTML=detail(p);else if(p.startsWith('/interview/'))host.innerHTML=interview(p);else host.innerHTML=landing()}
+ window.go=go;window.setInterviewPhase=setInterviewPhase;window.toggleDemoRecording=toggleDemoRecording;window.nextDemoQuestion=nextDemoQuestion;window.addEventListener('hashchange',renderRoute);renderRoute();
+})();
+</script>
+</body>
+</html>
+
+
+
+
+

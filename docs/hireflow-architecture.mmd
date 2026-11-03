@@ -1,0 +1,158 @@
+%% HireFlow - DotStark Technologies (hireflow.dotstark.tech)
+%% AI-powered HR screening platform. Verified against source: app/, frontend/src/
+%% Stack: Flask + React SPA (Vite) + SQLite + NVIDIA NIM LLM + SMTP, Dockerized.
+
+%% ============================================================
+%% 1. SYSTEM ARCHITECTURE
+%% ============================================================
+flowchart TB
+
+    subgraph ACTORS["Actors"]
+        HR["HR / Admin<br/>(yash@dotstark.com)"]
+        REC["Recruiter"]
+        CAND["Candidate"]
+    end
+
+    subgraph SPA["React SPA (Vite, react-router)"]
+        LAND["/ Landing"]
+        LOGIN["/login"]
+        DASH["/admin Dashboard<br/>candidates + jobs + AI status"]
+        CDET["/admin/candidate/:id<br/>ATS breakdown, answers + recordings,<br/>AI evaluation, manual review"]
+        INT["/interview/:token<br/>Verify email → Details → Guidelines → Interview"]
+        DONE["/interview/:token/done"]
+    end
+
+    subgraph API["Flask API (app/routes)"]
+        AUTH["/api/auth/login"]
+        JOBS["/api/admin/jobs<br/>POST /api/admin/jd (paste text)<br/>POST /api/admin/jd/upload (PDF)<br/>GET /api/admin/jd/role/pdf<br/>DELETE /api/admin/job/role"]
+        CANDAPI["/api/admin/candidate/id<br/>GET · DELETE<br/>POST /review · /retake<br/>POST /shortlist · /reevaluate"]
+        INTAPI["/api/interview/token<br/>GET /state<br/>POST /verify/request · /verify/confirm<br/>POST /details · /guidelines<br/>POST /tab-warning · /answer"]
+    end
+
+    subgraph SVC["Services (app/services)"]
+        AUTHS["auth_service<br/>users, roles, sessions"]
+        JDS["jd_service + jd_parser<br/>raw JD → structured job + PDF"]
+        CVP["cv_parser + resume_parser<br/>PDF → text"]
+        ATS["ats_reviewer<br/>LLM score vs JD<br/>temp 0, cached by content hash"]
+        QGEN["question_generator<br/>1 spoken intro + 20 MCQs<br/>10 JD-based + 10 resume-based<br/>(4 anchored to resume projects)"]
+        ISVC["interview_service<br/>tokens, email OTP, answers,<br/>tab warnings (3 = abort)"]
+        ESVC["evaluation_service<br/>MCQ deterministic + spoken LLM<br/>blend 0.4 objective / 0.6 spoken"]
+        MAIL["email_service<br/>SMTP interview invite"]
+    end
+
+    subgraph EXT["External services"]
+        NIM["NVIDIA NIM LLM<br/>nemotron-lightning-30b<br/>host.docker.internal:8100/v1"]
+        SMTP["SMTP server"]
+    end
+
+    subgraph DB["SQLite (app/db.py)"]
+        T1["users"]
+        T2["jobs · job_postings"]
+        T3["candidates"]
+        T4["interviews"]
+        T5["answers"]
+        T6["evaluations"]
+        T7["candidate_details · otp_codes"]
+    end
+
+    HR --> LOGIN --> AUTH --> AUTHS
+    REC --> LOGIN
+    HR --> DASH --> JOBS --> JDS
+    HR --> DASH --> CANDAPI
+    HR --> CDET --> CANDAPI
+    CAND --> INT --> INTAPI --> ISVC
+    INT --> DONE
+
+    JDS --> NIM
+    ATS --> NIM
+    QGEN --> NIM
+    ESVC --> NIM
+
+    JOBS --> T2
+    CANDAPI --> T3
+    ISVC --> T4
+    ISVC --> T5
+    ESVC --> T6
+    AUTHS --> T1
+    ISVC --> T7
+    MAIL --> SMTP
+
+%% ============================================================
+%% 2. HR PIPELINE (JD -> CV -> ATS -> shortlist -> review)
+%% ============================================================
+flowchart LR
+
+    A1["HR creates JD<br/>paste text or upload PDF"] --> A2["jd_parser structures JD<br/>(LLM, fallback deterministic)"]
+    A2 --> A3["Job saved<br/>jobs table + job_postings JSON + PDF"]
+    A3 --> A4["CVs dropped in<br/>jobs/role/ folder"]
+    A4 --> A5["pipeline.py picks up<br/>unprocessed CVs"]
+    A5 --> A6["cv_parser<br/>PDF to text"]
+    A6 --> A7["ats_reviewer<br/>LLM scores vs JD<br/>temp 0, hash-cached"]
+    A7 --> A8{"score >= 70<br/>(ATS_THRESHOLD)?"}
+    A8 -- "no" --> A9["Rejected<br/>workflow stops"]
+    A8 -- "yes" --> A10["Shortlisted"]
+    A10 --> A11["create_interview<br/>token, questions deferred"]
+    A11 --> A12["Email invite<br/>with interview link"]
+    A12 --> A13["Candidate completes<br/>interview + evaluation"]
+    A13 --> A14["HR reviews<br/>Dashboard / CandidateDetail"]
+    A14 --> A15{"HR decision"}
+    A15 --> A16["Progress / Shortlist"]
+    A15 --> A17["Reject"]
+    A15 --> A18["Retake<br/>new interview"]
+    A15 --> A19["Re-evaluate<br/>re-run AI scoring"]
+
+%% ============================================================
+%% 3. CANDIDATE INTERVIEW JOURNEY
+%% ============================================================
+sequenceDiagram
+    actor C as Candidate
+    participant SPA as Interview SPA
+    participant API as Flask API
+    participant ISVC as interview_service
+    participant QGEN as question_generator
+    participant ESVC as evaluation_service
+    participant LLM as NIM LLM
+
+    C->>SPA: Opens /interview/token from email
+    SPA->>API: GET /state
+    API->>ISVC: validate token
+    ISVC-->>SPA: phase: verify
+
+    SPA->>API: POST /verify/request
+    API->>ISVC: generate OTP
+    ISVC-->>C: OTP email (SMTP)
+    C->>SPA: Enters OTP
+    SPA->>API: POST /verify/confirm
+    API->>ISVC: verify OTP
+    ISVC-->>SPA: phase: details
+
+    C->>SPA: Fills details form
+    SPA->>API: POST /details
+    API->>ISVC: save candidate_details
+    ISVC->>QGEN: kick question generation (if not ready)
+    QGEN->>LLM: 1 spoken intro + 20 MCQs<br/>10 JD-based + 10 resume-based
+    LLM-->>QGEN: question set (JSON)
+    ISVC-->>SPA: phase: guidelines
+
+    C->>SPA: Accepts guidelines
+    SPA->>API: POST /guidelines
+    ISVC-->>SPA: phase: interview
+
+    Note over SPA,C: Proctoring active:<br/>fullscreen lock, tab-switch<br/>3rd warning aborts
+
+    C->>SPA: Speaks intro (5 min target)
+    SPA->>API: POST /answer (audio + video + transcript)
+    API->>ISVC: save answer
+    loop 20 MCQs
+        C->>SPA: Selects option
+        SPA->>API: POST /answer
+        API->>ISVC: save + score deterministically
+    end
+
+    SPA->>API: POST /answer (final)
+    API->>ESVC: evaluate_interview (async thread)
+    ESVC->>LLM: score spoken answers
+    LLM-->>ESVC: scores + strengths/weaknesses
+    ESVC-->>API: blended score (0.4/0.6) + recommendation
+    API-->>SPA: phase: completed
+    SPA-->>C: /interview/token/done
